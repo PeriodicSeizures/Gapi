@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Gapi">
+    <output-path>$USER_HOME$/Documents/MinecraftDev/servers/1.17/plugins</output-path>
+    <root id="archive" name="Gapi.jar">
+      <element id="file-copy" path="$PROJECT_DIR$/config.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/plugin.yml" />
+      <element id="module-output" name="Gapi" />
+    </root>
+  </artifact>
+</component>
