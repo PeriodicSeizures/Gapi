@@ -15,7 +15,11 @@ public abstract class SimplexMenu extends ComponentMenu {
     }
 
     public SimplexMenu(String title, int columns, ItemStack background) {
-        super(title, columns);
+        this(title, columns, background, null);
+    }
+
+    public SimplexMenu(String title, int columns, ItemStack background, Class<Menu> previousMenuClass) {
+        super(title, columns, previousMenuClass);
         this.background = background;
     }
 

@@ -14,8 +14,12 @@ public abstract class ComponentMenu extends Menu {
     private final int columns;
     protected final HashMap<Integer, Component> components = new HashMap<>();
 
-    public ComponentMenu(String title, int columns) {
-        super(title);
+    ComponentMenu(String title, int columns) {
+        this(title, columns, null);
+    }
+
+    public ComponentMenu(String title, int columns, Class<Menu> previousMenuClass) {
+        super(title, previousMenuClass);
         this.columns = columns;
     }
 

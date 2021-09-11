@@ -19,7 +19,7 @@ public class TestParallaxMenu extends ParallaxMenu {
         for (int i=0; i < 62; i++) {
             int index = (int)(Math.random() * (double)(materials.length));
 
-            addItem(new Component(ItemBuilder.builder(materials[index]).toItem()));
+            addItem(new Component(new ItemBuilder(materials[index]).toItem()));
         }
     }
 }

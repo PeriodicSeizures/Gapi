@@ -1,15 +1,17 @@
 name: Gapi
 main: com.crazicrafter1.gapi.Main
-version: 1.0.0
-author: crazicrafter1
+version: 1.0.0 # first version!
 api-version: 1.17
 depend: [CRUtils]
+author: crazicrafter1
 commands:
   testmenu:
     description: Test that the menus work properly
-    usage: /<command> [simplex | parallax]
+    usage: /<command> [simplex | parallax | input]
     permission: gapi.admin
 permissions:
   gapi.admin:
     description: Enable Gapi admin
     default: op
+
+# 1.0.0 first version

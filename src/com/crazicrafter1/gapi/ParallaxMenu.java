@@ -28,8 +28,12 @@ public abstract class ParallaxMenu extends ComponentMenu {
     private final String originalTitle;
 
     public ParallaxMenu(String title) {
-        super(null, 6);
-        originalTitle = title;
+        this(title, null);
+    }
+
+    public ParallaxMenu(String title, Class<Menu> previousMenuClass) {
+        super(title, 6, previousMenuClass);
+        this.originalTitle = title;
     }
 
     @Override
@@ -57,41 +61,36 @@ public abstract class ParallaxMenu extends ComponentMenu {
         int maxPages = getMaxPages();
         setTitle("&8(" + page + "/" + maxPages + ") " + originalTitle);
 
-        System.out.println();
-        Main.getInstance().info("setupMenu()");
-
         if (page != 1) {
-            Main.getInstance().info("Setting previous button");
             // Previous page
             //
             this.setComponent(0, 5,
-                new TriggerComponent(ItemBuilder.builder(Material.ARROW).name("&aPrevious Page").lore(new String[]{"&ePage " + (page-1)}).toItem()) {
+                new TriggerComponent(new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem()) {
                     @Override
                     public void onLeftClick(Player p) {
                         if (lastPage())
-                            show(p);
+                            show(p, false);
                     }
                 });
         } else
             removeComponent(0, 5);
 
         if (page != maxPages) {
-            Main.getInstance().info("Setting next button");
             // Next page
             //
             setComponent(8, 5,
-                new TriggerComponent(ItemBuilder.builder(Material.ARROW).name("&aNext Page").lore(new String[]{"&ePage " + (page+1)}).toItem()) {
+                new TriggerComponent(new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem()) {
                     @Override
                     public void onLeftClick(Player p) {
                         if (nextPage())
-                            show(p);
+                            show(p, false);
                     }
                 });
         } else
             removeComponent(8, 5);
     }
 
-    protected int getMaxPages() {
+    private int getMaxPages() {
         //return 4;
         return 1 + (items.size() - 1) / SIZE;
     }

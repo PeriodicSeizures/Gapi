@@ -19,11 +19,17 @@ public abstract class Menu {
     static final HashMap<UUID, Menu> openMenus = new HashMap<>();
     private String title;
     Inventory inventory; // package-private access
+    private Class<Menu> previousMenuClass; // Can be null
 
     boolean justOpened = false;
 
     Menu(String title) {
+        this(title, null);
+    }
+
+    Menu(String title, Class<Menu> previousMenuClass) {
         this.title = title;
+        this.previousMenuClass = previousMenuClass;
     }
 
     abstract void onMenuClick(InventoryClickEvent event);
@@ -44,13 +50,19 @@ public abstract class Menu {
     abstract void setupInventory();
 
     public final void show(Player player) {
-        justOpened = true;
+        show(player, true);
+    }
+
+    final void show(Player player, boolean setupMenus) {
         Menu.openMenus.put(player.getUniqueId(), this);
 
-        setupMenu(); // Component assign or whatever
+        if (setupMenus)
+            setupMenu(); // Component assign or whatever
+
         initInventory(); // new inventory
         setupInventory(); // assign inventory items
 
+        justOpened = true;
         player.openInventory(inventory);
         justOpened = false;
         player.updateInventory();

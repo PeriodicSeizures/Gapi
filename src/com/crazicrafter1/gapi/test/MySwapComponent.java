@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 public class MySwapComponent extends SwapComponent {
 
     public MySwapComponent() {
-        super(ItemBuilder.builder(Material.PAPER).name("Swap item").toItem());
+        super(new ItemBuilder(Material.PAPER).name("Swap item").toItem());
     }
 
     @Override

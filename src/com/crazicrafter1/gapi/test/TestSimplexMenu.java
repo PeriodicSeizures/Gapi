@@ -11,11 +11,11 @@ public class TestSimplexMenu extends SimplexMenu {
 
     public TestSimplexMenu() {
         super("Test simplex menu", 3,
-                ItemBuilder.builder(Material.BLACK_STAINED_GLASS_PANE).name("").toItem());
+                new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name("").toItem());
 
         this.setComponent(2, 1,
                 new TriggerComponent(
-                        ItemBuilder.builder(Material.PAPER).name("Test item").toItem()) {
+                        new ItemBuilder(Material.PAPER).name("Test item").toItem()) {
             @Override
             public void onLeftClick(Player p) {
                 Main.getInstance().info("Trigger item was clicked!");
