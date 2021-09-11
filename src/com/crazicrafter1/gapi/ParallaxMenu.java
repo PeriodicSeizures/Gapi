@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Variable size menu
  */
-public abstract class ParallaxMenu extends ComponentMenu {
+public abstract class ParallaxMenu extends Menu {
 
     private final ArrayList<Component> items = new ArrayList<>();
     private int page = 1;
@@ -28,11 +28,7 @@ public abstract class ParallaxMenu extends ComponentMenu {
     private final String originalTitle;
 
     public ParallaxMenu(String title) {
-        this(title, null);
-    }
-
-    public ParallaxMenu(String title, Class<Menu> previousMenuClass) {
-        super(title, 6, previousMenuClass);
+        super("", 6);
         this.originalTitle = title;
     }
 
@@ -91,7 +87,6 @@ public abstract class ParallaxMenu extends ComponentMenu {
     }
 
     private int getMaxPages() {
-        //return 4;
         return 1 + (items.size() - 1) / SIZE;
     }
 
