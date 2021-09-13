@@ -25,6 +25,7 @@ public class CmdTestMenu implements CommandExecutor {
         switch (args[0]) {
             case "simplex" -> new TestSimplexMenu().show(p);
             case "parallax" -> new TestParallaxMenu().show(p);
+            case "input" -> new TestInputMenu().show(p);
             default -> {
                 return false;
             }

@@ -5,13 +5,14 @@ import com.crazicrafter1.crutils.Util;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
 /**
  * Variable size menu
  */
-public abstract class ParallaxMenu extends Menu {
+public class ParallaxMenu extends ComponentMenu {
 
     private final ArrayList<Component> items = new ArrayList<>();
     private int page = 1;
@@ -43,11 +44,13 @@ public abstract class ParallaxMenu extends Menu {
            int itemPitch = relativeItemPitch + (page-1) * SIZE;
            if (itemPitch < items.size())
                onComponentClick(event, items.get(itemPitch));
-           else
-               event.setCancelled(true);
+           //else {
+           //    Main.getInstance().info("cancelled by default");
+           //}
        } else {
             // Component click
-            onComponentClick(event, getComponent(x, y));
+            super.onMenuClick(event);
+            //onComponentClick(event, getComponent(x, y));
        }
 
     }
@@ -61,11 +64,16 @@ public abstract class ParallaxMenu extends Menu {
             // Previous page
             //
             this.setComponent(0, 5,
-                new TriggerComponent(new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem()) {
+                new TriggerComponent() {
                     @Override
                     public void onLeftClick(Player p) {
                         if (lastPage())
-                            show(p, false);
+                            show(p);
+                    }
+
+                    @Override
+                    public ItemStack getIcon() {
+                        return new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem();
                     }
                 });
         } else
@@ -75,23 +83,24 @@ public abstract class ParallaxMenu extends Menu {
             // Next page
             //
             setComponent(8, 5,
-                new TriggerComponent(new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem()) {
+                new TriggerComponent() {
                     @Override
                     public void onLeftClick(Player p) {
                         if (nextPage())
-                            show(p, false);
+                            show(p);
+                    }
+
+                    @Override
+                    public ItemStack getIcon() {
+                        return new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem();
                     }
                 });
         } else
             removeComponent(8, 5);
     }
 
-    private int getMaxPages() {
-        return 1 + (items.size() - 1) / SIZE;
-    }
-
     @Override
-    final void setupInventory() {
+    final void fillInventory() {
         final int size = items.size();
 
         int startIndex = (page-1) * SIZE;
@@ -100,23 +109,27 @@ public abstract class ParallaxMenu extends Menu {
                 0, size-1);
 
         loop:
-            for (int y = ITEM_Y; y < ITEM_Y2 + 1; y++) {
-                for (int x = ITEM_X; x < ITEM_X2 + 1; x++) {
-                    inventory.setItem(y * 9 + x, items.get(startIndex).getIcon());
-                    startIndex++;
-                    if (startIndex > endIndex)
-                        break loop;
-                    // hours of nothing just to find out that
-                    // the return was breaking everything
-                    // return; // <<< curse this
-                }
+        for (int y = ITEM_Y; y < ITEM_Y2 + 1; y++) {
+            for (int x = ITEM_X; x < ITEM_X2 + 1; x++) {
+                inventory.setItem(y * 9 + x, items.get(startIndex).getIcon());
+                startIndex++;
+                if (startIndex > endIndex)
+                    break loop;
+                // hours of nothing just to find out that
+                // the return was breaking everything
+                // return; // <<< curse this
             }
+        }
 
-        super.setupInventory();
+        super.fillInventory();
     }
 
     protected final void addItem(Component item) {
         items.add(item);
+    }
+
+    private int getMaxPages() {
+        return 1 + (items.size() - 1) / SIZE;
     }
 
     private boolean lastPage() {

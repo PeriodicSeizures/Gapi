@@ -8,6 +8,7 @@ import com.crazicrafter1.gapi.TriggerComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class TestParallaxMenu extends ParallaxMenu {
 
@@ -19,7 +20,12 @@ public class TestParallaxMenu extends ParallaxMenu {
         for (int i=0; i < 62; i++) {
             int index = (int)(Math.random() * (double)(materials.length));
 
-            addItem(new Component(new ItemBuilder(materials[index]).toItem()));
+            addItem(new Component() {
+                @Override
+                public ItemStack getIcon() {
+                    return new ItemBuilder(materials[index]).toItem();
+                }
+            });
         }
     }
 }

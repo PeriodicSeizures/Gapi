@@ -4,13 +4,19 @@ import org.bukkit.inventory.ItemStack;
 
 public class Component {
 
-    private final ItemStack itemStack;
+    //boolean removable;
 
-    public Component(ItemStack itemStack) {
-        this.itemStack = itemStack;
+    public Component() {
+        //this(false);
+
     }
+
+    //public Component(boolean removable) {;
+    //    this.removable = removable;
+    //}
 
     public ItemStack getIcon() {
-        return this.itemStack;
+        return null;
     }
+
 }

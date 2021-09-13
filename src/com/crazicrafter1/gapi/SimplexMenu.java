@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Fixed size menu
  */
-public abstract class SimplexMenu extends Menu {
+public class SimplexMenu extends ComponentMenu {
     private final ItemStack background;
 
     @SuppressWarnings("unused")
@@ -23,22 +23,20 @@ public abstract class SimplexMenu extends Menu {
     @Override
     final void setupMenu() { }
 
-    @Override
-    final void onMenuClick(InventoryClickEvent event) {
-        Component component = components.get(event.getRawSlot());
-
-        super.onComponentClick(event, component);
-    }
+    //@Override
+    //final void onMenuClick(InventoryClickEvent event) {
+    //    super.onMenuClick(event);
+    //}
 
     @Override
-    final void setupInventory() {
+    final void fillInventory() {
         // Set background then set components
         if (background != null)
             for (int i=0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, background);
             }
 
-        super.setupInventory();
+        super.fillInventory();
     }
 
 

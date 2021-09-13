@@ -6,6 +6,7 @@ import com.crazicrafter1.gapi.TriggerComponent;
 import com.crazicrafter1.gapi.SimplexMenu;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class TestSimplexMenu extends SimplexMenu {
 
@@ -13,12 +14,15 @@ public class TestSimplexMenu extends SimplexMenu {
         super("Test simplex menu", 3,
                 new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name("").toItem());
 
-        this.setComponent(2, 1,
-                new TriggerComponent(
-                        new ItemBuilder(Material.PAPER).name("Test item").toItem()) {
+        this.setComponent(2, 1, new TriggerComponent() {
             @Override
             public void onLeftClick(Player p) {
                 Main.getInstance().info("Trigger item was clicked!");
+            }
+
+            @Override
+            public ItemStack getIcon() {
+                return new ItemBuilder(Material.PAPER).name("Test item").toItem();
             }
         });
 

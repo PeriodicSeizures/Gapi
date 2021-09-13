@@ -5,8 +5,8 @@ import org.bukkit.inventory.ItemStack;
 
 public abstract class TriggerComponent extends Component {
 
-    public TriggerComponent(ItemStack itemStack) {
-        super(itemStack);
+    public TriggerComponent() {
+        super();
     }
 
     public void onRightClick(Player p) { }
