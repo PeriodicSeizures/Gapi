@@ -1,21 +1,17 @@
 package com.crazicrafter1.gapi;
 
-import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.ReflectionUtil;
-import com.crazicrafter1.crutils.Util;
+import com.crazicrafter1.crutils.Updater;
 import com.crazicrafter1.gapi.test.CmdTestMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
 
-    private String prefix = ChatColor.GOLD + this.getName() + " : ";
-    private FileConfiguration config = null;
-
-    public static boolean debug;
+    public final String prefix = ChatColor.translateAlternateColorCodes('&',
+            "&c[&6&lGapi&r&c] ");
 
     private static Main instance;
     public static Main getInstance() {
@@ -26,24 +22,36 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        String v = Bukkit.getVersion();
-
         if (ReflectionUtil.isOldVersion()) {
-            error("Works only on 1.17+");
+            error("only MC 1.17+ is supported (Java 16)");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
-        this.saveDefaultConfig();
-        this.config = this.getConfig();
 
-        debug = config.getBoolean("debug");
+        ConfigurationSerialization.registerClass(Data.class);
+
+        this.saveDefaultConfig();
+
+        new Updater(this, "PeriodicSeizures", "Crutils", Data.update);
 
         new EventListener(this);
-
-        this.info("Loaded successfully.");
-
         new CmdTestMenu(this);
+    }
 
+    @Override
+    public void reloadConfig() {
+        try {
+            super.reloadConfig();
+        } catch (Exception e) {
+            error("Couldn't load config");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void saveConfig() {
+        this.getConfig().set("data", new Data());
+        super.saveConfig();
     }
 
     public void info(String s) {
@@ -63,7 +71,7 @@ public class Main extends JavaPlugin {
     }
 
     public void debug(String s) {
-        if (debug)
+        if (Data.debug)
             Bukkit.getConsoleSender().sendMessage(prefix + ChatColor.GOLD + s);
     }
 

@@ -9,9 +9,9 @@ public abstract class TriggerComponent extends Component {
         super();
     }
 
-    public void onRightClick(Player p) { }
+    public void onRightClick(Player p, boolean shift) { }
 
-    public void onLeftClick(Player p) { }
+    public void onLeftClick(Player p, boolean shift) { }
 
     public void onMiddleClick(Player p) { }
 

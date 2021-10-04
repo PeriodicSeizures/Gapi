@@ -29,7 +29,7 @@ public abstract class Menu {
     private String title;
 
     Menu(String title) {
-        this.title = title;
+        setTitle(title);
     }
 
     abstract void onMenuClick(InventoryClickEvent event);

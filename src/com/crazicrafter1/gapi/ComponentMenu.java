@@ -6,6 +6,7 @@ import com.crazicrafter1.crutils.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -59,11 +60,13 @@ public abstract class ComponentMenu extends Menu {
         if (!Util.inRange(x, 0, 8) || !Util.inRange(y, 0, columns - 1))
             throw new IndexOutOfBoundsException("x or y out of bounds (" + x + ", " + y + ")");
 
+        //Main.getInstance().info("setting component at " + x + " " + y);
+
         components.put(y*9 + x, component);
     }
 
     final protected void removeComponent(int x, int y) {
-        if (!Util.inRange(x, 0, 8) || !Util.inRange(y, 0, columns - 1))
+        if (!(Util.inRange(x, 0, 8) && Util.inRange(y, 0, columns - 1)))
             throw new IndexOutOfBoundsException("x or y out of bounds (" + x + ", " + y + ")");
 
         components.remove(y*9 + x);
@@ -73,20 +76,24 @@ public abstract class ComponentMenu extends Menu {
     final protected void onComponentClick(InventoryClickEvent event, Component component) {
         event.setCancelled(true);
 
-        if (event.isShiftClick())
-            return;
-
         if (component == null)
             return;
 
         if (component instanceof TriggerComponent trigger) {
             Player p = (Player) event.getWhoClicked();
-            switch (event.getClick()) {
-                case LEFT -> trigger.onLeftClick(p);
-                case RIGHT -> trigger.onRightClick(p);
-                case MIDDLE -> trigger.onMiddleClick(p);
-            }
+
+            if (event.isLeftClick())
+                trigger.onLeftClick(p, event.isShiftClick());
+            else if (event.isRightClick())
+                trigger.onRightClick(p, event.isShiftClick());
+            else if (event.getClick() == ClickType.MIDDLE)
+                trigger.onMiddleClick(p);
+
         } else if (component instanceof RemovableComponent rem) {
+
+            if (event.isShiftClick())
+                return;
+
             ItemStack cursor = event.getCursor();
             if (cursor != null && cursor.getType() != Material.AIR)
                 rem.currentItem = new ItemStack(cursor);
@@ -98,7 +105,7 @@ public abstract class ComponentMenu extends Menu {
     final protected void backButton(int x, int y, ItemStack itemStack, Class<? extends Menu> prevMenuClass, Object ... args) {
         setComponent(x, y, new TriggerComponent() {
             @Override
-            public void onLeftClick(Player p) {
+            public void onLeftClick(Player p, boolean shift) {
                 try {
                     ((Menu)ReflectionUtil.invokeConstructor(prevMenuClass, args)).show(p);
                 } catch (Exception e) {

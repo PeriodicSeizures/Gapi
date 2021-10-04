@@ -16,7 +16,7 @@ public class TestSimplexMenu extends SimplexMenu {
 
         this.setComponent(2, 1, new TriggerComponent() {
             @Override
-            public void onLeftClick(Player p) {
+            public void onLeftClick(Player p, boolean shift) {
                 Main.getInstance().info("Trigger item was clicked!");
             }
 

@@ -6,8 +6,8 @@ public class RemovableComponent extends Component {
 
     ItemStack currentItem;
 
-    public RemovableComponent() {
-
+    public RemovableComponent(ItemStack currentItem) {
+        this.currentItem = currentItem;
     }
 
     @Override

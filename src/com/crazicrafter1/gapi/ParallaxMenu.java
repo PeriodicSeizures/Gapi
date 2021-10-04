@@ -66,7 +66,7 @@ public class ParallaxMenu extends ComponentMenu {
             this.setComponent(0, 5,
                 new TriggerComponent() {
                     @Override
-                    public void onLeftClick(Player p) {
+                    public void onLeftClick(Player p, boolean shift) {
                         if (lastPage())
                             show(p);
                     }
@@ -85,7 +85,7 @@ public class ParallaxMenu extends ComponentMenu {
             setComponent(8, 5,
                 new TriggerComponent() {
                     @Override
-                    public void onLeftClick(Player p) {
+                    public void onLeftClick(Player p, boolean shift) {
                         if (nextPage())
                             show(p);
                     }
@@ -111,10 +111,12 @@ public class ParallaxMenu extends ComponentMenu {
         loop:
         for (int y = ITEM_Y; y < ITEM_Y2 + 1; y++) {
             for (int x = ITEM_X; x < ITEM_X2 + 1; x++) {
-                inventory.setItem(y * 9 + x, items.get(startIndex).getIcon());
-                startIndex++;
+                //Main.getInstance().info("" + startIndex + " " + endIndex);
                 if (startIndex > endIndex)
                     break loop;
+                inventory.setItem(y * 9 + x, items.get(startIndex).getIcon());
+                startIndex++;
+
                 // hours of nothing just to find out that
                 // the return was breaking everything
                 // return; // <<< curse this

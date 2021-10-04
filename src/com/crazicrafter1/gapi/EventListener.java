@@ -6,13 +6,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Collections;
 
 public class EventListener implements Listener {
 
@@ -22,12 +21,18 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void event(InventoryClickEvent e) {
+
         Player p = (Player) e.getWhoClicked();
 
-        Menu menu = Menu.openMenus.getOrDefault(
-                p.getUniqueId(), null);
+        Menu menu = Menu.openMenus.get(
+                p.getUniqueId());
 
         if (menu != null) {
+            if (e.getClick() == ClickType.DOUBLE_CLICK) {
+                e.setCancelled(true);
+                return;
+            }
+
             if (e.getClickedInventory() == menu.inventory) {
                 menu.onMenuClick(e);
             }
@@ -39,20 +44,20 @@ public class EventListener implements Listener {
         Menu menu = Menu.openMenus.get(e.getPlayer().getUniqueId());
 
         // If the event is stupid
-        //if (menu != null) {
-        //    if (!menu.justOpened) {
-        //        Menu.openMenus.remove(e.getPlayer().getUniqueId());
-        //        if (menu.runnable != null)
-        //            menu.runnable.run();
-        //    }
-        //}
+        if (menu != null) {
+            if (!menu.justOpened) {
+                Menu.openMenus.remove(e.getPlayer().getUniqueId());
+            }
+        }
     }
 
     @EventHandler
     public void event(InventoryDragEvent e) {
-        Player p = (Player)e.getWhoClicked();
+        Player p = (Player) e.getWhoClicked();
+
         if (Menu.openMenus.containsKey(p.getUniqueId())) {
             e.setCancelled(true);
         }
     }
+
 }
