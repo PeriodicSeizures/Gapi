@@ -46,6 +46,7 @@ public class EventListener implements Listener {
         // If the event is stupid
         if (menu != null) {
             if (!menu.justOpened) {
+                Main.getInstance().info("Removing instance menu");
                 Menu.openMenus.remove(e.getPlayer().getUniqueId());
             }
         }

@@ -46,15 +46,22 @@ public abstract class Menu {
 
         //player.closeInventory();
 
-        //new BukkitRunnable() {
-        //    @Override
-        //    public void run() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
                 justOpened = true;
                 player.openInventory(inventory);
                 justOpened = false;
-        //    }
-        //}.runTaskLater(Main.getInstance(), 1);
-        //player.updateInventory();
+                player.updateInventory();
+            }
+        }.runTaskLater(Main.getInstance(), 1);
+    }
+
+    final public void close() {
+        //if (p.getInventory() == inventory)
+        //if (inventory.getViewers()) {
+
+        //}
     }
 
     final String getTitle() {

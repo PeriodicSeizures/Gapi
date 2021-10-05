@@ -34,6 +34,7 @@ public abstract class InputMenu extends Menu {
 
     @Override
     void createInventory() {
+
         inventory = Bukkit.createInventory(null, InventoryType.ANVIL, getTitle());
         inventory.setItem(0, left);
     }

@@ -22,11 +22,11 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        if (ReflectionUtil.isOldVersion()) {
-            error("only MC 1.17+ is supported (Java 16)");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
+        //if (ReflectionUtil.isVersion()) {
+        //    error("only MC 1.17+ is supported (Java 16)");
+        //    Bukkit.getPluginManager().disablePlugin(this);
+        //    return;
+        //}
 
         ConfigurationSerialization.registerClass(Data.class);
 
