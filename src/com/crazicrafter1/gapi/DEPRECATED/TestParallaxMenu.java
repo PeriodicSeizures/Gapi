@@ -1,13 +1,8 @@
-package com.crazicrafter1.gapi.test;
+package com.crazicrafter1.gapi.DEPRECATED;
 
 import com.crazicrafter1.crutils.ItemBuilder;
-import com.crazicrafter1.gapi.Component;
-import com.crazicrafter1.gapi.Main;
-import com.crazicrafter1.gapi.ParallaxMenu;
-import com.crazicrafter1.gapi.TriggerComponent;
-import org.bukkit.Bukkit;
+import com.crazicrafter1.gapi.Button;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class TestParallaxMenu extends ParallaxMenu {
@@ -20,7 +15,7 @@ public class TestParallaxMenu extends ParallaxMenu {
         for (int i=0; i < 62; i++) {
             int index = (int)(Math.random() * (double)(materials.length));
 
-            addItem(new Component() {
+            addItem(new Button() {
                 @Override
                 public ItemStack getIcon() {
                     return new ItemBuilder(materials[index]).toItem();

@@ -1,17 +1,10 @@
 package com.crazicrafter1.gapi;
 
-import com.crazicrafter1.crutils.Util;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Collections;
 
 public class EventListener implements Listener {
 
@@ -20,35 +13,27 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void event(InventoryClickEvent e) {
+    public void event(InventoryClickEvent event) {
 
-        Player p = (Player) e.getWhoClicked();
-
-        Menu menu = Menu.openMenus.get(
-                p.getUniqueId());
+        Menu menu = Menu.openMenus.get(event.getWhoClicked().getUniqueId());
 
         if (menu != null) {
-            if (e.getClick() == ClickType.DOUBLE_CLICK) {
-                e.setCancelled(true);
+            if (event.getClick() == ClickType.DOUBLE_CLICK) {
+                event.setCancelled(true);
                 return;
             }
 
-            if (e.getClickedInventory() == menu.inventory) {
-                menu.onMenuClick(e);
-            }
+            menu.handleInventoryClick(event);
         }
     }
 
     @EventHandler
-    public void event(InventoryCloseEvent e) {
-        Menu menu = Menu.openMenus.get(e.getPlayer().getUniqueId());
+    public void event(InventoryCloseEvent event) {
+        Menu menu = Menu.openMenus.get(event.getPlayer().getUniqueId());
 
         // If the event is stupid
         if (menu != null) {
-            if (!menu.justOpened) {
-                Main.getInstance().info("Removing instance menu");
-                Menu.openMenus.remove(e.getPlayer().getUniqueId());
-            }
+            menu.handleInventoryClose(event);
         }
     }
 

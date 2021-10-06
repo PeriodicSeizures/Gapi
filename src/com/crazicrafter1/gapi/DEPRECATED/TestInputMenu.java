@@ -1,4 +1,4 @@
-package com.crazicrafter1.gapi.test;
+package com.crazicrafter1.gapi.DEPRECATED;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.gapi.InputMenu;

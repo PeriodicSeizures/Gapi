@@ -1,6 +1,5 @@
-package com.crazicrafter1.gapi;
+package com.crazicrafter1.gapi.DEPRECATED;
 
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**

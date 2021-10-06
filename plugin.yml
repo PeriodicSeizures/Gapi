@@ -7,7 +7,7 @@ author: crazicrafter1
 commands:
   testmenu:
     description: Test that the menus work properly
-    usage: /<command> [simplex | parallax | input]
+    usage: /<command> <simple | locked>
     permission: gapi.admin
 permissions:
   gapi.admin:

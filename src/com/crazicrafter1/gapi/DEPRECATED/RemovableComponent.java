@@ -1,8 +1,10 @@
-package com.crazicrafter1.gapi;
+package com.crazicrafter1.gapi.DEPRECATED;
 
+import com.crazicrafter1.gapi.Button;
 import org.bukkit.inventory.ItemStack;
 
-public class RemovableComponent extends Component {
+@Deprecated
+public class RemovableComponent extends Button {
 
     ItemStack currentItem;
 

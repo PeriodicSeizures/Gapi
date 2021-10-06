@@ -1,9 +1,7 @@
-package com.crazicrafter1.gapi.test;
+package com.crazicrafter1.gapi.DEPRECATED;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.Main;
-import com.crazicrafter1.gapi.TriggerComponent;
-import com.crazicrafter1.gapi.SimplexMenu;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

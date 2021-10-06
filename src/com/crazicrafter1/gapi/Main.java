@@ -18,40 +18,22 @@ public class Main extends JavaPlugin {
         return instance;
     }
 
+    public boolean debug;
+    public boolean update;
+
     @Override
     public void onEnable() {
         instance = this;
 
-        //if (ReflectionUtil.isVersion()) {
-        //    error("only MC 1.17+ is supported (Java 16)");
-        //    Bukkit.getPluginManager().disablePlugin(this);
-        //    return;
-        //}
-
-        ConfigurationSerialization.registerClass(Data.class);
-
         this.saveDefaultConfig();
 
-        new Updater(this, "PeriodicSeizures", "Crutils", Data.update);
+        this.debug = getConfig().getBoolean("debug");
+        this.update = getConfig().getBoolean("update");
+
+        new Updater(this, "PeriodicSeizures", "Gapi", update);
 
         new EventListener(this);
         new CmdTestMenu(this);
-    }
-
-    @Override
-    public void reloadConfig() {
-        try {
-            super.reloadConfig();
-        } catch (Exception e) {
-            error("Couldn't load config");
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void saveConfig() {
-        this.getConfig().set("data", new Data());
-        super.saveConfig();
     }
 
     public void info(String s) {
@@ -71,7 +53,7 @@ public class Main extends JavaPlugin {
     }
 
     public void debug(String s) {
-        if (Data.debug)
+        if (debug)
             Bukkit.getConsoleSender().sendMessage(prefix + ChatColor.GOLD + s);
     }
 
