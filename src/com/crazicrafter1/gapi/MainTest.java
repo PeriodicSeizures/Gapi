@@ -20,8 +20,15 @@ public class MainTest {
         }
     }
 
+    static void print(int i) {
+        System.out.println("i: " + i);
+    }
+
     public static void main(String[] args) {
-        new B().bar();
+        //new B().bar();
+
+        int i = 4;
+        print(i++);
     }
 
 }

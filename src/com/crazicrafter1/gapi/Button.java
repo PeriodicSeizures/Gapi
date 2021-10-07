@@ -3,7 +3,6 @@ package com.crazicrafter1.gapi;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class Button {
@@ -24,20 +23,20 @@ public final class Button {
 
     public static class Result {
         private boolean allowTake;
-        private Menu.Builder builder;
+        private AbstractMenu.Builder builder;
         private boolean close;
 
-        public Result(boolean allowTake, Menu.Builder builder, boolean close) {
+        public Result(boolean allowTake, AbstractMenu.Builder builder, boolean close) {
             this.allowTake = allowTake;
             this.builder = builder;
             this.close = close;
         }
 
-        public boolean isCancelled() {
-            return !allowTake;
+        public boolean allowsTake() {
+            return allowTake;
         }
 
-        public Menu.Builder getBuilder() {
+        public AbstractMenu.Builder getBuilder() {
             return builder;
         }
 
@@ -45,16 +44,24 @@ public final class Button {
             return close;
         }
 
+        /**
+         * To be called by Button return to do
+         * something simple at end of click
+         */
         public static Result take() {
             return new Result(true, null, false);
         }
 
-        public static Result open(Menu.Builder builder) {
+        public static Result open(AbstractMenu.Builder builder) {
             return new Result(false, builder, false);
         }
 
         public static Result close() {
             return new Result(false, null, true);
+        }
+
+        public static Result OK() {
+            return new Result(false, null, false);
         }
     }
 

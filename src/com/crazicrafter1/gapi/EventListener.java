@@ -15,7 +15,7 @@ public class EventListener implements Listener {
     @EventHandler
     public void event(InventoryClickEvent event) {
 
-        Menu menu = Menu.openMenus.get(event.getWhoClicked().getUniqueId());
+        AbstractMenu menu = AbstractMenu.openMenus.get(event.getWhoClicked().getUniqueId());
 
         if (menu != null) {
             if (event.getClick() == ClickType.DOUBLE_CLICK) {
@@ -23,17 +23,17 @@ public class EventListener implements Listener {
                 return;
             }
 
-            menu.handleInventoryClick(event);
+            menu.onInventoryClick(event);
         }
     }
 
     @EventHandler
     public void event(InventoryCloseEvent event) {
-        Menu menu = Menu.openMenus.get(event.getPlayer().getUniqueId());
+        AbstractMenu menu = AbstractMenu.openMenus.get(event.getPlayer().getUniqueId());
 
         // If the event is stupid
         if (menu != null) {
-            menu.handleInventoryClose(event);
+            menu.onInventoryClose(event);
         }
     }
 
@@ -41,7 +41,7 @@ public class EventListener implements Listener {
     public void event(InventoryDragEvent e) {
         Player p = (Player) e.getWhoClicked();
 
-        if (Menu.openMenus.containsKey(p.getUniqueId())) {
+        if (AbstractMenu.openMenus.containsKey(p.getUniqueId())) {
             e.setCancelled(true);
         }
     }
