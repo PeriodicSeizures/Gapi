@@ -9,14 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class CmdTestMenu implements CommandExecutor {
 
@@ -96,7 +89,7 @@ public class CmdTestMenu implements CommandExecutor {
                     while (!material.isItem()) {
                         material = values[Util.randomRange(0, values.length - 1)];
                     }
-                    builder.add(new Button.Builder()
+                    builder.append(new Button.Builder()
                             .icon(new ItemBuilder(material).toItem())
                             .lmb(interact -> {
                                 String name = interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " ");

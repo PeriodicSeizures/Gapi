@@ -119,15 +119,10 @@ public class TextMenu extends AbstractMenu {
             return (TBuilder) super.title(title);
         }
 
-        @Override
-        TBuilder childButton(int slot, ItemStack itemStack, Builder menuToOpen) {
-            return (TBuilder) super.childButton(slot, itemStack, menuToOpen);
-        }
-
-        @Override
-        TBuilder button(int slot, Button.Builder button) {
-            return (TBuilder) super.button(slot, button);
-        }
+        //@Override
+        //TBuilder button(int slot, Button.Builder button) {
+        //    return (TBuilder) super.button(slot, button);
+        //}
 
         @Override
         public TBuilder preventClose() {
@@ -140,7 +135,7 @@ public class TextMenu extends AbstractMenu {
         }
 
         public TBuilder leftInput(Button.Builder button) {
-            return this.button(Slot.SLOT_LEFT, button);
+            return (TBuilder) super.button(Slot.SLOT_LEFT, button);
         }
 
         public TBuilder onComplete(BiFunction<Player, String, Button.Result> completeFunction) {
@@ -163,17 +158,8 @@ public class TextMenu extends AbstractMenu {
         }
 
         @Override
-        public TextMenu open(Player player) {
+        public Builder validate() {
             Validate.notNull(completeFunction, "Complete function cannot be null");
-            Validate.notNull(player, "Player cannot be null");
-
-            TextMenu textMenu = new TextMenu(player,
-                                             title,
-                                             buttons,
-                                             preventClose,
-                                             closeFunction,
-                                             parentMenuBuilder,
-                                             completeFunction);
 
             // analyze SLOT 0 first item
             // must be not null and non-air material
@@ -191,10 +177,23 @@ public class TextMenu extends AbstractMenu {
 
             buttons.put(Slot.SLOT_LEFT, LEFT);
 
-            //Main.getInstance().debug(
-            //        LEFT.itemStack.getType() + " " + LEFT.itemStack.getItemMeta().getDisplayName());
+            return super.validate();
+        }
 
-            // if
+        @Override
+        public TextMenu open(Player player) {
+            //this.validate();
+
+            Validate.notNull(player, "Player cannot be null");
+
+            TextMenu textMenu = new TextMenu(player,
+                                             title,
+                                             buttons,
+                                             preventClose,
+                                             closeFunction,
+                                             parentMenuBuilder,
+                                             completeFunction);
+
             textMenu.openInventory();
 
             return textMenu;

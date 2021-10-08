@@ -223,30 +223,6 @@ public abstract class AbstractMenu {
             return this;
         }
 
-        /**
-         * Interior use only
-         * Set a button at slot which will open the target menu on LMB
-         * Will set the parent menu of the target menu
-         * --> Called by derived classes
-         */
-        Builder childButton(int slot, ItemStack itemStack, Builder menuToOpen) {
-            return this.button(slot, new Button.Builder()
-                    .icon(itemStack)
-                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this))));
-        }
-
-        /**
-         * Interior use only
-         * Set a button at slot
-         * --> Called by derived classes
-         */
-        Builder button(int slot, Button.Builder button) {
-            Validate.isTrue(slot >= 0, "slot must be a whole number (slot >= 0)");
-            Validate.notNull(button);
-            buttons.put(slot, button.get());
-            return this;
-        }
-
         public Builder preventClose() {
             preventClose = true;
             return this;
@@ -258,14 +234,23 @@ public abstract class AbstractMenu {
             return this;
         }
 
+        public Builder validate() {
+            Validate.notNull(title);
+            return this;
+        }
+
         /**
          * Set the parent MenuBuilder of this MenuBuilder
          * @param builder parent builder
          * @return this
          */
-        Builder parent(Builder builder) {
-            Validate.notNull(builder);
+        final Builder parent(Builder builder) {
             parentMenuBuilder = builder;
+            return this;
+        }
+
+        final Builder button(int slot, Button.Builder button) {
+            buttons.put(slot, button.get());
             return this;
         }
 

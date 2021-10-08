@@ -93,13 +93,39 @@ public class SimpleMenu extends AbstractMenu {
             return (SBuilder) super.title(title);
         }
 
-        public SBuilder childButton(int x, int y, ItemStack itemStack, Builder menuToOpen) {
-            Validate.isTrue(x >= 0, "x must be greater or equal to 0 (" + x + ")");
-            Validate.isTrue(x <= 8, "x must be less or equal to 8 (" + x + ")");
-            Validate.isTrue(y >= 0, "y must be greater or equal to 0 (" + y + ")");
-            Validate.isTrue(y < columns, "y must be less than columns " + columns + " (" + y + ")");
+        @Override
+        public SBuilder preventClose() {
+            return (SBuilder) super.preventClose();
+        }
 
-            return (SBuilder) super.childButton(y*9 + x, itemStack, menuToOpen);
+        @Override
+        public SBuilder onClose(Function<Player, Button.Result> closeFunction) {
+            return (SBuilder) super.onClose(closeFunction);
+        }
+
+        /**
+         * The LMB will always be bound to the child menu
+         * Heavy customization is the aim of this plugin
+         * So, how to denote these overrides and customization?
+         * childButtonAndRMB
+         * @param x
+         * @param y
+         * @param itemStack
+         * @param menuToOpen
+         * @param rightClickListener
+         * @return
+         */
+        public SBuilder childButton(int x, int y, ItemStack itemStack, Builder menuToOpen, Function<Button.Interact, Button.Result> rightClickListener) {
+            return this.button(x, y, new Button.Builder()
+                    .icon(itemStack)
+                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this)))
+                    .rmb(rightClickListener));
+        }
+
+        public SBuilder childButton(int x, int y, ItemStack itemStack, Builder menuToOpen) {
+            return this.button(x, y, new Button.Builder()
+                    .icon(itemStack)
+                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this))));
         }
 
         public SBuilder button(int x, int y, Button.Builder button) {
@@ -109,14 +135,6 @@ public class SimpleMenu extends AbstractMenu {
             Validate.isTrue(y < columns, "y must be less than columns " + columns + " (" + y + ")");
 
             return (SBuilder) super.button(y*9 + x, button);
-        }
-
-        public SBuilder preventClose() {
-            return (SBuilder) super.preventClose();
-        }
-
-        public SBuilder onClose(Function<Player, Button.Result> closeFunction) {
-            return (SBuilder) super.onClose(closeFunction);
         }
 
         public SBuilder background() {
@@ -152,6 +170,8 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         public SimpleMenu open(Player player) {
+            Validate.notNull(player, "Player cannot be null");
+
             SimpleMenu menu = new SimpleMenu(player,
                                              title,
                                              buttons,
