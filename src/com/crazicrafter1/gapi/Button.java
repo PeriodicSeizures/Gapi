@@ -5,19 +5,33 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Function;
 
-public final class Button {
+public class Button {
 
     public static class Interact {
         public Player player;
         public ItemStack heldItem;
         public ItemStack clickedItem;
-        public boolean shift;
+        boolean shift;
+        int numberKeySlot;
 
-        public Interact(Player player, ItemStack heldItem, ItemStack clickedItem, boolean shift) {
+        public Interact(Player player,
+                        ItemStack heldItem,
+                        ItemStack clickedItem,
+                        boolean shift,
+                        int numberKeySlot) {
             this.player = player;
             this.heldItem = heldItem;
             this.clickedItem = clickedItem;
             this.shift = shift;
+            this.numberKeySlot = numberKeySlot;
+        }
+
+        public boolean isShift() {
+            return shift;
+        }
+
+        public int getPressedNumberKey() {
+            return numberKeySlot;
         }
     }
 
@@ -25,11 +39,13 @@ public final class Button {
         private boolean allowTake;
         private AbstractMenu.Builder builder;
         private boolean close;
+        private boolean back;
 
-        public Result(boolean allowTake, AbstractMenu.Builder builder, boolean close) {
+        public Result(boolean allowTake, AbstractMenu.Builder builder, boolean close, boolean back) {
             this.allowTake = allowTake;
             this.builder = builder;
             this.close = close;
+            this.back = back;
         }
 
         public boolean allowsTake() {
@@ -44,63 +60,91 @@ public final class Button {
             return close;
         }
 
+        public boolean goBack() {
+            return back;
+        }
+
         /**
          * To be called by Button return to do
          * something simple at end of click
          */
         public static Result take() {
-            return new Result(true, null, false);
+            return new Result(true, null, false, false);
         }
 
         public static Result open(AbstractMenu.Builder builder) {
-            return new Result(false, builder, false);
+            return new Result(false, builder, false, false);
         }
 
         public static Result close() {
-            return new Result(false, null, true);
+            return new Result(false, null, true, false);
+        }
+
+        public static Result back() {
+            return new Result(false, null, false, true);
         }
 
         public static Result OK() {
-            return new Result(false, null, false);
+            return new Result(false, null, false, false);
         }
     }
 
-    final ItemStack itemStack;
-    final Function<Interact, Result> lmb;
-    //Consumer<Player> mmb;
-    final Function<Interact, Result> rmb;
+    ItemStack itemStack;
+    final Function<Interact, Result> leftClickFunction;
+    final Function<Interact, Result> middleClickFunction;
+    final Function<Interact, Result> rightClickFunction;
+    final Function<Interact, Result> numberKeyFunction;
 
-    private Button(ItemStack itemStack,
-                   Function<Interact, Result> leftClickListener,
-                   Function<Interact, Result> rightClickListener) {
+    Button(ItemStack itemStack,
+           Function<Interact, Result> leftClickFunction,
+           Function<Interact, Result> middleClickFunction,
+           Function<Interact, Result> rightClickFunction,
+           Function<Interact, Result> numberKeyFunction) {
         this.itemStack = itemStack;
-        this.lmb = leftClickListener;
-        this.rmb = rightClickListener;
+        this.leftClickFunction = leftClickFunction;
+        this.middleClickFunction = middleClickFunction;
+        this.rightClickFunction = rightClickFunction;
+        this.numberKeyFunction = numberKeyFunction;
     }
 
     public static class Builder {
         private ItemStack itemStack;
-        private Function<Interact, Result> leftClickListener;
-        private Function<Interact, Result> rightClickListener;
+        private Function<Interact, Result> leftClickFunction;
+        private Function<Interact, Result> middleClickFunction;
+        private Function<Interact, Result> rightClickFunction;
+        private Function<Interact, Result> numberKeyFunction;
 
         public Builder icon(ItemStack itemStack) {
             this.itemStack = itemStack;
             return this;
         }
 
-        // now if
-        public Builder lmb(Function<Interact, Result> leftClickListener) {
-            this.leftClickListener = leftClickListener;
+        public Builder lmb(Function<Interact, Result> leftClickFunction) {
+            this.leftClickFunction = leftClickFunction;
             return this;
         }
 
-        public Builder rmb(Function<Interact, Result> rightClickListener) {
-            this.rightClickListener = rightClickListener;
+        public Builder mmb(Function<Interact, Result> middleClickFunction) {
+            this.middleClickFunction = middleClickFunction;
+            return this;
+        }
+
+        public Builder rmb(Function<Interact, Result> rightClickFunction) {
+            this.rightClickFunction = rightClickFunction;
+            return this;
+        }
+
+        public Builder num(Function<Interact, Result> numberKeyFunction) {
+            this.numberKeyFunction = numberKeyFunction;
             return this;
         }
 
         public Button get() {
-            return new Button(itemStack, leftClickListener, rightClickListener);
+            return new Button(itemStack,
+                              leftClickFunction,
+                              middleClickFunction,
+                              rightClickFunction,
+                              numberKeyFunction);
         }
     }
 }

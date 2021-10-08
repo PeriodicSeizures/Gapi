@@ -23,6 +23,9 @@ public class EventListener implements Listener {
                 return;
             }
 
+            if (event.getClickedInventory() != menu.inventory)
+                return;
+
             menu.onInventoryClick(event);
         }
     }
@@ -38,11 +41,13 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void event(InventoryDragEvent e) {
-        Player p = (Player) e.getWhoClicked();
+    public void event(InventoryDragEvent event) {
+        Player p = (Player) event.getWhoClicked();
 
-        if (AbstractMenu.openMenus.containsKey(p.getUniqueId())) {
-            e.setCancelled(true);
+        AbstractMenu menu = AbstractMenu.openMenus.get(p.getUniqueId());
+        if (menu != null) {
+            if (event.getInventory().equals(menu.inventory))
+                event.setCancelled(true);
         }
     }
 

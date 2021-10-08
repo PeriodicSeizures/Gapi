@@ -5,6 +5,7 @@ import com.crazicrafter1.crutils.Util;
 import com.crazicrafter1.gapi.Button;
 import com.crazicrafter1.gapi.SimpleMenu;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -12,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ParallaxMenu extends SimpleMenu {
 
@@ -31,7 +33,7 @@ public class ParallaxMenu extends SimpleMenu {
                          String inventoryTitle,
                          HashMap<Integer, Button> buttons,
                          boolean preventClose,
-                         Consumer<Player> closeFunction,
+                         Function<Player, Button.Result> closeFunction,
                          AbstractMenu.Builder parentMenuBuilder,
                          ItemStack background,
                          ArrayList<Button> orderedButtons) {
@@ -41,6 +43,10 @@ public class ParallaxMenu extends SimpleMenu {
 
     @Override
     void openInventory() {
+        this.inventory = Bukkit.createInventory(null, 6*9, inventoryTitle);
+
+        // clear all buttons in square
+
         if (page > 1) {
             // Previous page
             //
@@ -75,13 +81,20 @@ public class ParallaxMenu extends SimpleMenu {
         loop:
         for (int y = ITEM_Y; y < ITEM_Y2 + 1; y++) {
             for (int x = ITEM_X; x < ITEM_X2 + 1; x++) {
-                //Main.getInstance().info("" + startIndex + " " + endIndex);
-                if (startIndex > endIndex)
-                    break loop;
+                // Delete old blocked button
 
-                button(x, y, orderedButtons.get(startIndex++));
+                //Main.getInstance().info("" + startIndex + " " + endIndex);
+                if (startIndex > endIndex) {
+                    delButton(x, y);
+                    //break loop;
+                } else {
+
+                    button(x, y, orderedButtons.get(startIndex++));
+                }
             }
         }
+
+        player.openInventory(inventory);
 
         super.openInventory();
     }
@@ -112,9 +125,28 @@ public class ParallaxMenu extends SimpleMenu {
             super(6);
         }
 
-        // special method to add an ordered component
+        /**
+         * Add unit to list
+         */
         public PBuilder add(Button.Builder button) {
             orderedButtons.add(button.get());
+            return this;
+        }
+
+        /**
+         * Add unit which open a menu on click
+         */
+        public PBuilder addChild(ItemStack itemStack, Builder menuToOpen) {
+            orderedButtons.add(new Button.Builder()
+                    .icon(itemStack)
+                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this))).get());
+            return this;
+        }
+
+        public PBuilder action(Consumer<ParallaxMenu.PBuilder> self) {
+            // for everytask, do
+            self.accept(this);
+
             return this;
         }
 
@@ -142,7 +174,7 @@ public class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
-        public PBuilder onClose(Consumer<Player> closeFunction) {
+        public PBuilder onClose(Function<Player, Button.Result> closeFunction) {
             return (PBuilder) super.onClose(closeFunction);
         }
 

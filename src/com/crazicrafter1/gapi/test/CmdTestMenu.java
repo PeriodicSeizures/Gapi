@@ -2,17 +2,21 @@ package com.crazicrafter1.gapi.test;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.Util;
-import com.crazicrafter1.gapi.Button;
-import com.crazicrafter1.gapi.Main;
-import com.crazicrafter1.gapi.ParallaxMenu;
-import com.crazicrafter1.gapi.SimpleMenu;
+import com.crazicrafter1.gapi.*;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class CmdTestMenu implements CommandExecutor {
 
@@ -88,11 +92,36 @@ public class CmdTestMenu implements CommandExecutor {
 
                 Material values[] = Material.values();
                 for (int i = 0; i < 59; i++) {
+                    Material material = values[Util.randomRange(0, values.length - 1)];
+                    while (!material.isItem()) {
+                        material = values[Util.randomRange(0, values.length - 1)];
+                    }
                     builder.add(new Button.Builder()
-                            .icon(new ItemBuilder(values[Util.randomRange(0, values.length - 1)]).toItem()));
+                            .icon(new ItemBuilder(material).toItem())
+                            .lmb(interact -> {
+                                String name = interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " ");
+
+                                interact.player.sendMessage(ChatColor.GOLD + "I'm a " + name);
+
+                                //interact.player.sendMessage(
+                                //        ChatColor.GOLD + "I'm " + (
+                                //                new HashSet<>(Arrays.asList((int)'a', (int)'e', (int)'i', (int)'o', (int)'u')).contains(Character.toLowerCase(name.indexOf(0)))
+                                //        ? "an " : "a ") + name);
+                                return Button.Result.OK();
+                            }));
                 }
 
                 builder.open(p);
+                break;
+            } case "text": {
+                new TextMenu.TBuilder()
+                        .title("Text menu")
+                        .text("Default text!")
+                        .onComplete((player, s) -> {
+                            p.sendMessage("You typed " + s);
+                            return Button.Result.OK();
+                        })
+                        .open(p);
                 break;
             }
             default:

@@ -4,6 +4,7 @@ import com.crazicrafter1.crutils.ItemBuilder;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class AbstractMenu {
 
@@ -26,7 +28,7 @@ public abstract class AbstractMenu {
     String inventoryTitle;
     final HashMap<Integer, Button> buttons;
     boolean preventClose;
-    final Consumer<Player> closeFunction;
+    final Function<Player, Button.Result> closeFunction;
 
     // parent menu
     private final AbstractMenu.Builder parentMenuBuilder;
@@ -43,8 +45,10 @@ public abstract class AbstractMenu {
                  String inventoryTitle,
                  HashMap<Integer, Button> buttons,
                  boolean preventClose,
-                 Consumer<Player> closeFunction,
+                 Function<Player, Button.Result> closeFunction,
                  AbstractMenu.Builder parentMenuBuilder) {
+        Validate.notNull(inventoryTitle, "Inventory must be given a title");
+
         this.player = player;
 
         this.inventoryTitle = inventoryTitle;
@@ -62,11 +66,13 @@ public abstract class AbstractMenu {
         // but should't be called in
 
         for (Map.Entry<Integer,Button> entry : buttons.entrySet()) {
+            Main.getInstance().debug(entry.getKey() + " " +
+                    entry.getValue().itemStack.getType() + " " + entry.getValue().itemStack.getItemMeta().getDisplayName());
             inventory.setItem(entry.getKey(), entry.getValue().itemStack);
         }
 
+        //player.openInventory(inventory);
         openMenus.put(player.getUniqueId(), this);
-
         open = true;
     }
 
@@ -102,68 +108,61 @@ public abstract class AbstractMenu {
             player.closeInventory();
 
         if (closeFunction != null)
-            closeFunction.accept(player);
+            invokeResult(null, closeFunction.apply(player));
+    }
+
+    Button.Result invokeButtonAt(InventoryClickEvent event) {
+        Button button = buttons.get(event.getSlot());
+
+        // always cancel the take item, for later override
+        //event.setCancelled(true);
+        if (button == null) {
+            return null;
+        }
+        //ClickType.N
+        //event.get
+        Button.Interact interact =
+                new Button.Interact(player,
+                        event.getCursor(),
+                        event.getCurrentItem(),
+                        event.isShiftClick(),
+                        event.getClick() == ClickType.NUMBER_KEY ? event.getSlot() : -1);
+
+        if (event.isLeftClick() && button.leftClickFunction != null)
+            return button.leftClickFunction.apply(interact);
+        else if (event.isRightClick() && button.rightClickFunction != null)
+            return button.rightClickFunction.apply(interact);
+        else if (event.getClick() == ClickType.MIDDLE)
+            return button.middleClickFunction.apply(interact);
+        else if (event.getClick() == ClickType.NUMBER_KEY)
+            return button.numberKeyFunction.apply(interact);
+        else
+            return null;
+    }
+
+    void invokeResult(InventoryClickEvent event, Button.Result result) {
+        if (result == null)
+            return;
+
+        Main.getInstance().debug("allow take: " + result.allowsTake());
+
+        if (result.allowsTake())                // give item
+            event.setCancelled(false);
+        else if (result.getBuilder() != null)   // open a menu
+            result.getBuilder().open(player);
+        else if (result.doClose())              // graceful close
+            closeInventory(true);
+        else if (result.goBack())
+            parentMenuBuilder.open(player);
     }
 
     /**
      * Event handlers
      */
-    final void onInventoryClick(InventoryClickEvent event) {
-        if (event.getClickedInventory().equals(inventory)) {
-            Button button = buttons.get(event.getSlot());
+    abstract void onInventoryClick(InventoryClickEvent event);
 
-            // always cancel the take item, for later override
-            event.setCancelled(true);
-            if (button == null) {
-                return;
-            }
-
-            Button.Interact interact =
-                    new Button.Interact(player, event.getCursor(), event.getCurrentItem(), event.isShiftClick());
-
-
-            if (event.isLeftClick()) {
-                if (button.lmb == null)
-                    return;
-
-                Button.Result result = button.lmb.apply(interact);
-
-                Main.getInstance().debug("allow take: " + result.allowsTake());
-
-                if (result.allowsTake()) // give item
-                    event.setCancelled(false);
-                else if (result.getBuilder() != null) // open a menu
-                    result.getBuilder().open(player);
-                else if (result.doClose()) { // close the menu gracefully
-                    open = false;
-                    player.closeInventory();
-                } else {
-                    // do nothing
-                }
-            } else if (event.isRightClick()) {
-                if (button.rmb == null)
-                    return;
-
-                Button.Result result = button.rmb.apply(interact);
-
-                Main.getInstance().debug("allow take: " + result.allowsTake());
-
-                if (result.allowsTake()) // give item
-                    event.setCancelled(false);
-                else if (result.getBuilder() != null) // open a menu
-                    result.getBuilder().open(player);
-                else if (result.doClose()) { // close the menu gracefully
-                    open = false;
-                    player.closeInventory();
-                } else {
-                    // do nothing
-                }
-            }
-        }
-    }
-
-    final void onInventoryDrag(InventoryDragEvent event) {
-        if (event.getInventory().equals(inventory)) {
+    void onInventoryDrag(InventoryDragEvent event) {
+        //if (event.getInventory().equals(inventory)) {
             // can be cancelled initially because
             // drag is kinda useless
 
@@ -173,11 +172,11 @@ public abstract class AbstractMenu {
                     break;
                 }
             }
-        }
+        //}
     }
 
-    final void onInventoryClose(InventoryCloseEvent event) {
-        if (open && event.getInventory().equals(this.inventory)) {
+    void onInventoryClose(InventoryCloseEvent event) {
+        if (open) {
 
             // fire closeFunction lambda
             closeInventory(false);
@@ -190,7 +189,7 @@ public abstract class AbstractMenu {
                     }
                 }.runTaskLater(Main.getInstance(), 1);
             } else {
-                Main.getInstance().debug("Removing inventory");
+                Main.getInstance().debug("Removing AbstractMenu from HashMap");
                 openMenus.remove(player.getUniqueId());
 
                 // add impl to remove menu
@@ -213,8 +212,10 @@ public abstract class AbstractMenu {
         String title;
         final HashMap<Integer, Button> buttons = new HashMap<>();
         boolean preventClose;
-        Consumer<Player> closeFunction;
+        Function<Player, Button.Result> closeFunction;
         AbstractMenu.Builder parentMenuBuilder;
+
+
 
         public Builder title(String title) {
             Validate.notNull(title, "title cannot be null");
@@ -223,21 +224,25 @@ public abstract class AbstractMenu {
         }
 
         /**
-         * Insert a button that will open a menu on click
-         * Will automatically assign the parent of the other menu
-         * @param slot the inventory slot
-         * @param itemStack the icon for the button
-         * @param menuToOpen the menu to open on LMB
-         * @return this
+         * Interior use only
+         * Set a button at slot which will open the target menu on LMB
+         * Will set the parent menu of the target menu
+         * --> Called by derived classes
          */
         Builder childButton(int slot, ItemStack itemStack, Builder menuToOpen) {
-            return button(slot, new Button.Builder()
+            return this.button(slot, new Button.Builder()
                     .icon(itemStack)
                     .lmb(interact -> Button.Result.open(menuToOpen.parent(this))));
         }
 
-        // button should be overridden accordingly
-        public Builder button(int slot, Button.Builder button) {
+        /**
+         * Interior use only
+         * Set a button at slot
+         * --> Called by derived classes
+         */
+        Builder button(int slot, Button.Builder button) {
+            Validate.isTrue(slot >= 0, "slot must be a whole number (slot >= 0)");
+            Validate.notNull(button);
             buttons.put(slot, button.get());
             return this;
         }
@@ -247,7 +252,8 @@ public abstract class AbstractMenu {
             return this;
         }
 
-        public Builder onClose(Consumer<Player> closeFunction) {
+        public Builder onClose(Function<Player, Button.Result> closeFunction) {
+            Validate.notNull(closeFunction);
             this.closeFunction = closeFunction;
             return this;
         }
@@ -257,7 +263,8 @@ public abstract class AbstractMenu {
          * @param builder parent builder
          * @return this
          */
-        private Builder parent(Builder builder) {
+        Builder parent(Builder builder) {
+            Validate.notNull(builder);
             parentMenuBuilder = builder;
             return this;
         }

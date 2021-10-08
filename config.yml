@@ -1,5 +1,2 @@
-data:
-  # Enable debugging?
-  debug: false
-
-  update: true
+debug: false
+update: true

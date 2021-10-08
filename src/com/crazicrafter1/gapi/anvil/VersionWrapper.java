@@ -37,7 +37,7 @@ public interface VersionWrapper {
     void sendPacketOpenWindow(Player player, int containerId, String inventoryTitle);
 
     /**
-     * Sends PacketPlayOutCloseWindow to the player with the contaienr id
+     * Sends PacketPlayOutCloseWindow to the player with the container id
      *
      * @param player      The player to send the packet to
      * @param containerId The container id to close
@@ -60,7 +60,7 @@ public interface VersionWrapper {
     void setActiveContainer(Player player, Object container);
 
     /**
-     * Sets the supplied windowId of the supplied Container
+     * Sets the id of the supplied Container
      *
      * @param container   The container to set the windowId of
      * @param containerId The new windowId

@@ -14,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class SimpleMenu extends AbstractMenu {
     private final ItemStack background;
@@ -23,13 +24,19 @@ public class SimpleMenu extends AbstractMenu {
                String inventoryTitle,
                HashMap<Integer, Button> buttons,
                boolean preventClose,
-               Consumer<Player> closeFunction,
+               Function<Player, Button.Result> closeFunction,
                AbstractMenu.Builder parentMenuBuilder,
                ItemStack background,
                int columns) {
         super(player, inventoryTitle, buttons, preventClose, closeFunction, parentMenuBuilder);
         this.background = background;
         this.columns = columns;
+    }
+
+    @Override
+    void onInventoryClick(InventoryClickEvent event) {
+        event.setCancelled(true);
+        invokeResult(event, invokeButtonAt(event));
     }
 
     void button(int x, int y, Button button) {
@@ -41,30 +48,39 @@ public class SimpleMenu extends AbstractMenu {
     }
 
     void openInventory() {
-        SimpleMenu instance = this;
+        // this causes the mouse reset,
+        // but ensures that
+        // the prev menu was correctly closed
+        //player.closeInventory();
+
         this.inventory = Bukkit.createInventory(null, columns*9, inventoryTitle);
 
-        if (background != null)
-            for (int i =0; i < inventory.getSize(); i++) {
+        if (background != null) {
+            for (int i = 0; i < inventory.getSize(); i++) {
                 //if (inventory.getItem(i) == null)
-                    inventory.setItem(i, background);
+                inventory.setItem(i, background);
             }
+        }
+
+        player.openInventory(inventory);
 
         super.openInventory();
 
-        player.openInventory(inventory);
+        //new BukkitRunnable() {
+        //    @Override
+        //    public void run() {
+                //player.openInventory(inventory);
+                //openMenus.put(player.getUniqueId(), self);
+                //open = true;
+        //    }
+        //}.runTaskLater(Main.getInstance(), 0);
     }
 
     public static class SBuilder extends Builder {
         private final static ItemStack BACKGROUND_1 = new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name(" ").toItem();
 
         ItemStack background;
-        private int columns;
-
-        // ref prev button
-        private Button.Builder backButton;
-        private int backButtonX;
-        private int backButtonY;
+        private final int columns;
 
         public SBuilder(int columns) {
             Validate.isTrue(columns >= 1, "columns must be greater or equal to 0 (" + columns + ")");
@@ -99,7 +115,7 @@ public class SimpleMenu extends AbstractMenu {
             return (SBuilder) super.preventClose();
         }
 
-        public SBuilder onClose(Consumer<Player> closeFunction) {
+        public SBuilder onClose(Function<Player, Button.Result> closeFunction) {
             return (SBuilder) super.onClose(closeFunction);
         }
 
@@ -108,6 +124,8 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         public SBuilder background(ItemStack itemStack) {
+            Validate.notNull(itemStack, "itemstack must not be null");
+            Validate.isTrue(itemStack.getType() != Material.AIR, "itemstack must not be air");
             this.background = itemStack;
             return this;
         }
