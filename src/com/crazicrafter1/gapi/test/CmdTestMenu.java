@@ -31,25 +31,6 @@ public class CmdTestMenu implements CommandExecutor {
             return false;
 
         switch (args[0].toLowerCase()) {
-
-            /*case "test": {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        Main.getInstance().info("Runnable was called!");
-                    }
-                }.runTaskLater(Main.getInstance(), 0);
-
-                try {
-                    Thread.sleep(2000);
-                } catch (Exception e) {
-
-                }
-
-                Main.getInstance().info("Outside runnable was called!");
-                break;
-            }*/
-
             case "simple": {
                 new SimpleMenu.SBuilder(3)
                         .title("Simple Menu")
@@ -59,14 +40,26 @@ public class CmdTestMenu implements CommandExecutor {
                         .open(p);
 
                 break;
-            } case "hierarchy": {
+            } case "nested": {
                 new SimpleMenu.SBuilder(3)
-                        .title("Test Builder Menu")
+                        .title("Test Nested Menu")
+                        .background()
                         .childButton(4, 1, new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
                                 new SimpleMenu.SBuilder(3)
-                                        .title("Child menu")
+                                        .title("Child menu 1")
                                         .background()
-                                        .parentButton(4, 1))
+                                        .childButton(4, 1, new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                                                new SimpleMenu.SBuilder(3)
+                                                        .title("Child menu 2")
+                                                        .background()
+                                                        .childButton(4, 1, new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                                                                new SimpleMenu.SBuilder(3)
+                                                                        .title("Child menu 3")
+                                                                        .background()
+
+                                                                        .parentButton(4, 2))
+                                                        .parentButton(4, 2))
+                                        .parentButton(4, 2))
                         .open(p);
                 break;
             } case "locked": {
@@ -76,7 +69,7 @@ public class CmdTestMenu implements CommandExecutor {
                         .button(4, 0,
                                 new Button.Builder()
                                         .icon(new ItemBuilder(Material.IRON_DOOR).name("Unlock menu").toItem())
-                                        .lmb(interact -> Button.Result.close()))
+                                        .lmb(interact -> EnumResult.CLOSE))
                         .open(p);
                 break;
             } case "parallax": {
@@ -92,11 +85,11 @@ public class CmdTestMenu implements CommandExecutor {
                                 self.append(new Button.Builder()
                                         .icon(new ItemBuilder(material).toItem())
                                         .lmb(interact -> {
-                                            String name = interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " ");
+                                            interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
+                                                    interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
 
-                                            interact.player.sendMessage(ChatColor.GOLD + "I'm a " + name);
-
-                                            return Button.Result.OK();
+                                            // do nothing else on click
+                                            return EnumResult.OK;
                                         })
                                 );
                             }
@@ -110,7 +103,7 @@ public class CmdTestMenu implements CommandExecutor {
                         .text("Default text!")
                         .onComplete((player, s) -> {
                             p.sendMessage("You typed " + s);
-                            return Button.Result.OK();
+                            return EnumResult.OK;
                         })
                         .open(p);
                 break;

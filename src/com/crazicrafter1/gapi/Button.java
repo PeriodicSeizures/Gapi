@@ -1,5 +1,6 @@
 package com.crazicrafter1.gapi;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -35,6 +36,7 @@ public class Button {
         }
     }
 
+    /*
     public static class Result {
         private boolean allowTake;
         private AbstractMenu.Builder builder;
@@ -70,10 +72,10 @@ public class Button {
         //    return refresh;
         //}
 
-        /**
-         * To be called by Button return to do
-         * something simple at end of click
-         */
+        //**
+        // * To be called by Button return to do
+        // * something simple at end of click
+        // *
         public static Result take() {
             return new Result(true, null, false, false, false);
         }
@@ -98,18 +100,19 @@ public class Button {
             return new Result(false, null, false, false, true);
         }
     }
+     */
 
     ItemStack itemStack;
-    final Function<Interact, Result> leftClickFunction;
-    final Function<Interact, Result> middleClickFunction;
-    final Function<Interact, Result> rightClickFunction;
-    final Function<Interact, Result> numberKeyFunction;
+    final Function<Interact, Object> leftClickFunction;
+    final Function<Interact, Object> middleClickFunction;
+    final Function<Interact, Object> rightClickFunction;
+    final Function<Interact, Object> numberKeyFunction;
 
     Button(ItemStack itemStack,
-           Function<Interact, Result> leftClickFunction,
-           Function<Interact, Result> middleClickFunction,
-           Function<Interact, Result> rightClickFunction,
-           Function<Interact, Result> numberKeyFunction) {
+           Function<Interact, Object> leftClickFunction,
+           Function<Interact, Object> middleClickFunction,
+           Function<Interact, Object> rightClickFunction,
+           Function<Interact, Object> numberKeyFunction) {
         this.itemStack = itemStack;
         this.leftClickFunction = leftClickFunction;
         this.middleClickFunction = middleClickFunction;
@@ -119,34 +122,54 @@ public class Button {
 
     public static class Builder {
         private ItemStack itemStack;
-        private Function<Interact, Result> leftClickFunction;
-        private Function<Interact, Result> middleClickFunction;
-        private Function<Interact, Result> rightClickFunction;
-        private Function<Interact, Result> numberKeyFunction;
+        private Function<Interact, Object> leftClickFunction;
+        private Function<Interact, Object> middleClickFunction;
+        private Function<Interact, Object> rightClickFunction;
+        private Function<Interact, Object> numberKeyFunction;
 
         public Builder icon(ItemStack itemStack) {
             this.itemStack = itemStack;
             return this;
         }
 
-        public Builder lmb(Function<Interact, Result> leftClickFunction) {
+        public Builder lmb(Function<Interact, Object> leftClickFunction) {
             this.leftClickFunction = leftClickFunction;
             return this;
         }
 
-        public Builder mmb(Function<Interact, Result> middleClickFunction) {
+        public Builder mmb(Function<Interact, Object> middleClickFunction) {
             this.middleClickFunction = middleClickFunction;
             return this;
         }
 
-        public Builder rmb(Function<Interact, Result> rightClickFunction) {
+        public Builder rmb(Function<Interact, Object> rightClickFunction) {
             this.rightClickFunction = rightClickFunction;
             return this;
         }
 
-        public Builder num(Function<Interact, Result> numberKeyFunction) {
+        public Builder num(Function<Interact, Object> numberKeyFunction) {
             this.numberKeyFunction = numberKeyFunction;
             return this;
+        }
+
+        public Builder bind(AbstractMenu.Builder menuToOpen,
+                            EnumPress press) {
+
+            Validate.notNull(menuToOpen, "Supplied menu must not be null");
+
+            return this.append(press, (interact) -> EnumResult.OPEN(menuToOpen));
+        }
+
+        public Builder append(EnumPress press, Function<Interact, Object> func) {
+
+            if (press != null)
+                return switch (press) {
+                    case LMB -> lmb(func);
+                    case MMB -> mmb(func);
+                    case RMB -> rmb(func);
+                    case NUM -> num(func);
+                };
+            throw new NullPointerException("Supplied EnumPress must not be null");
         }
 
         public Button get() {
@@ -156,5 +179,7 @@ public class Button {
                               rightClickFunction,
                               numberKeyFunction);
         }
+
+
     }
 }

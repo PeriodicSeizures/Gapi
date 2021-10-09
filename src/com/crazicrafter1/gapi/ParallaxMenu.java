@@ -2,8 +2,6 @@ package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.Util;
-import com.crazicrafter1.gapi.Button;
-import com.crazicrafter1.gapi.SimpleMenu;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -33,7 +31,7 @@ public class ParallaxMenu extends SimpleMenu {
                          String inventoryTitle,
                          HashMap<Integer, Button> buttons,
                          boolean preventClose,
-                         Function<Player, Button.Result> closeFunction,
+                         Function<Player, EnumResult> closeFunction,
                          AbstractMenu.Builder parentMenuBuilder,
                          ItemStack background,
                          ArrayList<Button> orderedButtons) {
@@ -54,7 +52,7 @@ public class ParallaxMenu extends SimpleMenu {
                     .icon(new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem())
                     .lmb(interact -> {
                         prevPage();
-                        return Button.Result.OK();
+                        return EnumResult.OK;
                     }).get());
 
         } else
@@ -65,7 +63,7 @@ public class ParallaxMenu extends SimpleMenu {
                     .icon(new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem())
                     .lmb(interact -> {
                         nextPage();
-                        return Button.Result.OK();
+                        return EnumResult.OK;
                     }).get());
         } else
             delButton(8, 5);
@@ -119,9 +117,7 @@ public class ParallaxMenu extends SimpleMenu {
 
     public static class PBuilder extends SBuilder {
 
-        private final ArrayList<Button> orderedButtons = new ArrayList<>();
-
-        //private Consumer<ParallaxMenu.PBuilder> action;
+        private final ArrayList<Button.Builder> orderedButtons = new ArrayList<>();
 
         public PBuilder() {
             super(6);
@@ -131,7 +127,7 @@ public class ParallaxMenu extends SimpleMenu {
          * Add unit to list
          */
         public PBuilder append(Button.Builder button) {
-            orderedButtons.add(button.get());
+            orderedButtons.add(button);
             return this;
         }
 
@@ -139,25 +135,27 @@ public class ParallaxMenu extends SimpleMenu {
          * Add unit which open a menu on click
          */
         public PBuilder appendChild(ItemStack itemStack, Builder menuToOpen) {
+            menuToOpen.parent(this);
+
             orderedButtons.add(new Button.Builder()
                     .icon(itemStack)
-                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this))).get());
+                    .bind(menuToOpen, EnumPress.LMB)
+            );
             return this;
         }
 
-        public PBuilder appendChild(ItemStack itemStack, Builder menuToOpen, Function<Button.Interact, Button.Result> rightClickListener) {
+        public PBuilder appendChild(ItemStack itemStack, Builder menuToOpen,
+                                    Function<Button.Interact, Object> rightClickListener) {
+            menuToOpen.parent(this);
             orderedButtons.add(new Button.Builder()
                     .icon(itemStack)
-                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this)))
+                    .bind(menuToOpen, EnumPress.LMB)
                     .rmb(rightClickListener)
-                    .get()
             );
             return this;
         }
 
         public PBuilder action(Consumer<ParallaxMenu.PBuilder> action) {
-            // for everytask, do
-            // clear units first
             orderedButtons.clear();
             action.accept(this);
 
@@ -183,7 +181,7 @@ public class ParallaxMenu extends SimpleMenu {
             Validate.isTrue(!(x >= ITEM_X && x <= ITEM_X2 && y >= ITEM_Y && y <= ITEM_Y2),
                     "x, y must not be within center block (" + x + ", " + y + ")");
             Validate.isTrue(!((x == 0 || x == 8) && y == 5), "button must not overlap page buttons");
-            return (PBuilder)super.button(x, y, button);
+            return (PBuilder) super.button(x, y, button);
         }
 
         @Override
@@ -192,7 +190,7 @@ public class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
-        public PBuilder onClose(Function<Player, Button.Result> closeFunction) {
+        public PBuilder onClose(Function<Player, EnumResult> closeFunction) {
             return (PBuilder) super.onClose(closeFunction);
         }
 
@@ -215,23 +213,32 @@ public class ParallaxMenu extends SimpleMenu {
         public PBuilder parentButton(int x, int y, ItemStack itemStack) {
             Validate.isTrue(!(x >= ITEM_X && x <= ITEM_X2 && y >= ITEM_Y && y <= ITEM_Y2),
                     "x, y must not be within center block (" + x + ", " + y + ")");
-            return (ParallaxMenu.PBuilder)super.parentButton(x, y, itemStack);
+            return (ParallaxMenu.PBuilder) super.parentButton(x, y, itemStack);
+        }
+
+        @Override
+        public PBuilder bind(int x, int y, EnumPress press, ItemStack defItemStack, Builder menuToOpen) {
+            return (PBuilder) super.bind(x, y, press, defItemStack, menuToOpen);
         }
 
         @Override
         public ParallaxMenu open(Player player) {
-            //super.validate();
-
             Validate.notNull(player, "Player cannot be null");
+
+            HashMap<Integer, Button> btns = new HashMap<>();
+            buttons.forEach((i, b) -> btns.put(i, b.get()));
+
+            ArrayList<Button> obtns = new ArrayList<>();
+            orderedButtons.forEach((b) -> obtns.add(b.get()));
 
             ParallaxMenu menu = new ParallaxMenu(player,
                                                  title,
-                                                 buttons,
+                                                 btns,
                                                  preventClose,
                                                  closeFunction,
                                                  parentMenuBuilder,
                                                  background,
-                                                 orderedButtons);
+                                                 obtns);
 
             menu.openInventory();
 

@@ -15,7 +15,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractMenu {
@@ -28,7 +27,7 @@ public abstract class AbstractMenu {
     String inventoryTitle;
     final HashMap<Integer, Button> buttons;
     boolean preventClose;
-    final Function<Player, Button.Result> closeFunction;
+    final Function<Player, EnumResult> closeFunction;
 
     // parent menu
     private final AbstractMenu.Builder parentMenuBuilder;
@@ -45,7 +44,7 @@ public abstract class AbstractMenu {
                  String inventoryTitle,
                  HashMap<Integer, Button> buttons,
                  boolean preventClose,
-                 Function<Player, Button.Result> closeFunction,
+                 Function<Player, EnumResult> closeFunction,
                  AbstractMenu.Builder parentMenuBuilder) {
         Validate.notNull(inventoryTitle, "Inventory must be given a title");
 
@@ -111,16 +110,18 @@ public abstract class AbstractMenu {
             invokeResult(null, closeFunction.apply(player));
     }
 
-    Button.Result invokeButtonAt(InventoryClickEvent event) {
+    /**
+     * Invoke the button corresponding to @{event}
+     * @param event
+     * @return an {@link Object} of instance {@link Object[]} or {@link EnumResult}
+     */
+    Object invokeButtonAt(InventoryClickEvent event) {
         Button button = buttons.get(event.getSlot());
 
-        // always cancel the take item, for later override
-        //event.setCancelled(true);
         if (button == null) {
-            return null;
+            return EnumResult.OK;
         }
-        //ClickType.N
-        //event.get
+
         Button.Interact interact =
                 new Button.Interact(player,
                         event.getCursor(),
@@ -137,25 +138,28 @@ public abstract class AbstractMenu {
         else if (event.getClick() == ClickType.NUMBER_KEY)
             return button.numberKeyFunction.apply(interact);
         else
-            return null;
+            return EnumResult.OK;
     }
 
-    void invokeResult(InventoryClickEvent event, Button.Result result) {
-        if (result == null)
-            return;
-
-        Main.getInstance().debug("allow take: " + result.allowsTake());
-
-        if (result.allowsTake())                // give item
-            event.setCancelled(false);
-        else if (result.getBuilder() != null)   // open a menu
-            result.getBuilder().open(player);
-        else if (result.doClose())              // graceful close
-            closeInventory(true);
-        else if (result.goBack())
-            parentMenuBuilder.open(player);
-        else if (result.doRefresh())
-            openInventory();
+    void invokeResult(InventoryClickEvent event, Object o) {
+        if (o instanceof AbstractMenu.Builder builder) {
+            Main.getInstance().debug("Result: OPEN");
+            //Main.getInstance().debug("Builder: ");
+            builder.open(player);
+        } else if (o instanceof EnumResult result) {
+            Main.getInstance().debug("Result: " + result.name());
+            switch (result) {
+                case GRAB_ITEM -> event.setCancelled(false);
+                case CLOSE -> closeInventory(true);
+                case BACK -> parentMenuBuilder.open(player);
+                case REFRESH -> openInventory();
+                case OK -> {
+                    // do nothing
+                }
+            }
+        }
+        else
+            throw new RuntimeException("Returned object must not be null, got: " + o);
     }
 
     /**
@@ -164,22 +168,23 @@ public abstract class AbstractMenu {
     abstract void onInventoryClick(InventoryClickEvent event);
 
     void onInventoryDrag(InventoryDragEvent event) {
-        //if (event.getInventory().equals(inventory)) {
-            // can be cancelled initially because
-            // drag is kinda useless
-
-            for (int slot = 0; slot < inventory.getSize(); slot++) {
-                if (event.getRawSlots().contains(slot)) {
-                    event.setCancelled(true);
-                    break;
-                }
+        // inventory size should start at 0 and be continuous until ending slot
+        for (int slot = 0; slot < inventory.getSize(); slot++) {
+            if (event.getRawSlots().contains(slot)) {
+                event.setCancelled(true);
+                break;
             }
-        //}
+        }
     }
 
+    /**
+     * Open has the intentional effects of preventing anomalies
+     * from happening due to either:
+     *  - InventoryClickEvent -> close
+     *  - InventoryCloseEvent ->
+     */
     void onInventoryClose(InventoryCloseEvent event) {
         if (open) {
-
             // fire closeFunction lambda
             closeInventory(false);
 
@@ -212,9 +217,9 @@ public abstract class AbstractMenu {
         final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
 
         String title;
-        final HashMap<Integer, Button> buttons = new HashMap<>();
+        final HashMap<Integer, Button.Builder> buttons = new HashMap<>();
         boolean preventClose;
-        Function<Player, Button.Result> closeFunction;
+        Function<Player, EnumResult> closeFunction;
         AbstractMenu.Builder parentMenuBuilder;
 
 
@@ -230,7 +235,7 @@ public abstract class AbstractMenu {
             return this;
         }
 
-        public Builder onClose(Function<Player, Button.Result> closeFunction) {
+        public Builder onClose(Function<Player, EnumResult> closeFunction) {
             Validate.notNull(closeFunction);
             this.closeFunction = closeFunction;
             return this;
@@ -246,14 +251,34 @@ public abstract class AbstractMenu {
          * @param builder parent builder
          * @return this
          */
-        public final Builder parent(Builder builder) {
+        final Builder parent(Builder builder) {
+            Validate.notNull(builder);
             parentMenuBuilder = builder;
             return this;
         }
 
         final Builder button(int slot, Button.Builder button) {
-            buttons.put(slot, button.get());
+            buttons.put(slot, button);
             return this;
+        }
+
+        //final Builder append(int slot, EnumPress press, ItemStack defItemStack, Function<Button.Interact, Object> func) {
+        //    Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(defItemStack));
+
+        //    if (button == null)
+        //        button = buttons.get(slot);
+
+        //    button.append(press, func);
+        //    return this;
+        //}
+
+        final Button.Builder getOrMakeButton(int slot, ItemStack defItemStack) {
+            Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(defItemStack));
+
+            if (button == null)
+                button = buttons.get(slot);
+
+            return button;
         }
 
         /**

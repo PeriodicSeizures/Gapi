@@ -6,14 +6,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class SimpleMenu extends AbstractMenu {
@@ -24,7 +19,7 @@ public class SimpleMenu extends AbstractMenu {
                String inventoryTitle,
                HashMap<Integer, Button> buttons,
                boolean preventClose,
-               Function<Player, Button.Result> closeFunction,
+               Function<Player, EnumResult> closeFunction,
                AbstractMenu.Builder parentMenuBuilder,
                ItemStack background,
                int columns) {
@@ -36,7 +31,9 @@ public class SimpleMenu extends AbstractMenu {
     @Override
     void onInventoryClick(InventoryClickEvent event) {
         event.setCancelled(true);
-        invokeResult(event, invokeButtonAt(event));
+        Object o = invokeButtonAt(event);
+        Main.getInstance().debug("" + o);
+        invokeResult(event, o);
     }
 
     void button(int x, int y, Button button) {
@@ -48,16 +45,10 @@ public class SimpleMenu extends AbstractMenu {
     }
 
     void openInventory() {
-        // this causes the mouse reset,
-        // but ensures that
-        // the prev menu was correctly closed
-        //player.closeInventory();
-
         this.inventory = Bukkit.createInventory(null, columns*9, inventoryTitle);
 
         if (background != null) {
             for (int i = 0; i < inventory.getSize(); i++) {
-                //if (inventory.getItem(i) == null)
                 inventory.setItem(i, background);
             }
         }
@@ -65,15 +56,6 @@ public class SimpleMenu extends AbstractMenu {
         player.openInventory(inventory);
 
         super.openInventory();
-
-        //new BukkitRunnable() {
-        //    @Override
-        //    public void run() {
-                //player.openInventory(inventory);
-                //openMenus.put(player.getUniqueId(), self);
-                //open = true;
-        //    }
-        //}.runTaskLater(Main.getInstance(), 0);
     }
 
     public static class SBuilder extends Builder {
@@ -99,33 +81,40 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         @Override
-        public SBuilder onClose(Function<Player, Button.Result> closeFunction) {
+        public SBuilder onClose(Function<Player, EnumResult> closeFunction) {
             return (SBuilder) super.onClose(closeFunction);
         }
 
         /**
-         * The LMB will always be bound to the child menu
-         * Heavy customization is the aim of this plugin
-         * So, how to denote these overrides and customization?
-         * childButtonAndRMB
-         * @param x
-         * @param y
-         * @param itemStack
+         * Set the menu to open with default LMB bound button
+         * @param x horizontal position
+         * @param y vertical position
+         * @param itemStack button icon
          * @param menuToOpen
-         * @param rightClickListener
-         * @return
+         * @return this
          */
-        public SBuilder childButton(int x, int y, ItemStack itemStack, Builder menuToOpen, Function<Button.Interact, Button.Result> rightClickListener) {
-            return this.button(x, y, new Button.Builder()
-                    .icon(itemStack)
-                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this)))
-                    .rmb(rightClickListener));
+        public SBuilder childButton(int x, int y,
+                                    ItemStack itemStack, Builder menuToOpen) {
+
+            // print before and after for debug
+            Main.getInstance().debug("Got Builder: " + menuToOpen);
+            Validate.notNull(menuToOpen);
+
+            menuToOpen.parent(this);
+
+            return this.bind(x, y, EnumPress.LMB, itemStack, menuToOpen);
         }
 
-        public SBuilder childButton(int x, int y, ItemStack itemStack, Builder menuToOpen) {
+        public SBuilder childButton(int x, int y,
+                                    ItemStack itemStack, Builder menuToOpen,
+                                    Function<Button.Interact, Object> rightClickListener) {
+
+            menuToOpen.parent(this);
+
             return this.button(x, y, new Button.Builder()
                     .icon(itemStack)
-                    .lmb(interact -> Button.Result.open(menuToOpen.parent(this))));
+                    .bind(menuToOpen, EnumPress.LMB)
+                    .rmb(rightClickListener));
         }
 
         public SBuilder button(int x, int y, Button.Builder button) {
@@ -158,23 +147,55 @@ public class SimpleMenu extends AbstractMenu {
             return this.parentButton(x, y, PREV_1);
         }
 
-        public SBuilder parentButton(int x, int y, ItemStack itemStack) {
+        public SBuilder parentButton(int x, int y,
+                                     ItemStack itemStack) {
             Validate.isTrue(x >= 0, "x must be greater or equal to 0 (" + x + ")");
             Validate.isTrue(x <= 8, "x must be less or equal to 8 (" + x + ")");
             Validate.isTrue(y >= 0, "y must be greater or equal to 0 (" + y + ")");
             Validate.isTrue(y < columns, "y must be less than columns " + columns + " (" + y + ")");
 
-            return button(x, y, new Button.Builder().icon(itemStack).lmb(
-                interact -> Button.Result.open(parentMenuBuilder)
-            ));
+            //this.parentMenuBuilder =
+
+            return button(x, y, new Button.Builder()
+                    .icon(itemStack)
+                    .lmb(interact -> EnumResult.BACK));
+
+            //return this.bind(x, y, EnumPress.LMB, itemStack, parentMenuBuilder);
+        }
+
+        /**
+         * Bind a menu to a button at location, upon {@link EnumPress} being invoked
+         * @param x horizontal position
+         * @param y vertical position
+         * @param press bind to which event
+         * @param defItemStack button icon
+         * @param menuToOpen the menu to open on press
+         * @return this
+         */
+        public SBuilder bind(int x, int y,
+                             EnumPress press,
+                             ItemStack defItemStack, Builder menuToOpen) {
+            //menuToOpen.parent(this);
+            //this.parent(menuToOpen);
+
+            this.getOrMakeButton(x, y, defItemStack)
+                    .bind(menuToOpen, press);
+            return this;
+        }
+
+        final Button.Builder getOrMakeButton(int x, int y, ItemStack defItemStack) {
+            return super.getOrMakeButton(y*9 + x, defItemStack);
         }
 
         public SimpleMenu open(Player player) {
             Validate.notNull(player, "Player cannot be null");
 
+            HashMap<Integer, Button> btns = new HashMap<>();
+            buttons.forEach((i, b) -> btns.put(i, b.get()));
+
             SimpleMenu menu = new SimpleMenu(player,
                                              title,
-                                             buttons,
+                                             btns,
                                              preventClose,
                                              closeFunction,
                                              parentMenuBuilder,

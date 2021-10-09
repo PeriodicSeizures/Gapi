@@ -14,7 +14,7 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void event(InventoryClickEvent event) {
-
+//Object oarr = new Object[4];
         AbstractMenu menu = AbstractMenu.openMenus.get(event.getWhoClicked().getUniqueId());
 
         if (menu != null) {

@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class TextMenu extends AbstractMenu {
@@ -34,7 +33,7 @@ public class TextMenu extends AbstractMenu {
 
     private static final VersionWrapper WRAPPER = new Wrapper1_17_1_R1(); //new VersionMatcher().match();
 
-    private final BiFunction<Player, String, Button.Result> completeFunction;
+    private final BiFunction<Player, String, EnumResult> completeFunction;
 
     private int containerId;
 
@@ -42,9 +41,9 @@ public class TextMenu extends AbstractMenu {
                     String inventoryTitle,
                     HashMap<Integer, Button> buttons,
                     boolean preventClose,
-                    Function<Player, Button.Result> closeFunction,
+                    Function<Player, EnumResult> closeFunction,
                     Builder parentMenuBuilder,
-                    BiFunction<Player, String, Button.Result> completeFunction) {
+                    BiFunction<Player, String, EnumResult> completeFunction) {
         super(player, inventoryTitle, buttons, preventClose, closeFunction, parentMenuBuilder);
         this.completeFunction = completeFunction;
     }
@@ -98,20 +97,20 @@ public class TextMenu extends AbstractMenu {
             final ItemStack clicked = inventory.getItem(AnvilGUI.Slot.OUTPUT);
             if (clicked == null || clicked.getType() == Material.AIR) return;
 
-            Button.Result result;
+            Object o;
 
             if (event.getSlot() == Slot.SLOT_OUTPUT) {
-                result = completeFunction.apply(player,
+                o = completeFunction.apply(player,
                         clicked.hasItemMeta() ? clicked.getItemMeta().getDisplayName() : "");
             } else {
-                result = invokeButtonAt(event);
+                o = invokeButtonAt(event);
             }
-            invokeResult(event, result);
+            invokeResult(event, o);
         }
     }
 
     public static class TBuilder extends Builder {
-        private BiFunction<Player, String, Button.Result> completeFunction;
+        private BiFunction<Player, String, EnumResult> completeFunction;
         private String itemText;
 
         @Override
@@ -130,7 +129,7 @@ public class TextMenu extends AbstractMenu {
         }
 
         @Override
-        public TBuilder onClose(Function<Player, Button.Result> closeFunction) {
+        public TBuilder onClose(Function<Player, EnumResult> closeFunction) {
             return (TBuilder) super.onClose(closeFunction);
         }
 
@@ -138,7 +137,7 @@ public class TextMenu extends AbstractMenu {
             return (TBuilder) super.button(Slot.SLOT_LEFT, button);
         }
 
-        public TBuilder onComplete(BiFunction<Player, String, Button.Result> completeFunction) {
+        public TBuilder onComplete(BiFunction<Player, String, EnumResult> completeFunction) {
             this.completeFunction = completeFunction;
 
             return this;
@@ -163,16 +162,16 @@ public class TextMenu extends AbstractMenu {
 
             // analyze SLOT 0 first item
             // must be not null and non-air material
-            Button LEFT = buttons.get(Slot.SLOT_LEFT);
+            Button.Builder LEFT = buttons.get(Slot.SLOT_LEFT);
             if (LEFT == null) {
-                LEFT = new Button.Builder().icon(new ItemStack(Material.NAME_TAG)).get();
-            } else if (LEFT.itemStack == null) {
-                LEFT.itemStack = new ItemBuilder(Material.PAPER).toItem();
+                LEFT = new Button.Builder().icon(new ItemStack(Material.NAME_TAG));
+            } else if (LEFT.get().itemStack == null) {
+                LEFT.icon(new ItemBuilder(Material.PAPER).toItem());
             }
 
             if (itemText != null) {
                 // apply text to item
-                LEFT.itemStack = new ItemBuilder(LEFT.itemStack).name(itemText).toItem();
+                LEFT.icon(new ItemBuilder(LEFT.get().itemStack).name(itemText).toItem());
             }
 
             buttons.put(Slot.SLOT_LEFT, LEFT);
@@ -182,13 +181,14 @@ public class TextMenu extends AbstractMenu {
 
         @Override
         public TextMenu open(Player player) {
-            //this.validate();
-
             Validate.notNull(player, "Player cannot be null");
+
+            HashMap<Integer, Button> btns = new HashMap<>();
+            buttons.forEach((i, b) -> btns.put(i, b.get()));
 
             TextMenu textMenu = new TextMenu(player,
                                              title,
-                                             buttons,
+                                             btns,
                                              preventClose,
                                              closeFunction,
                                              parentMenuBuilder,
