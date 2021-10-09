@@ -2,194 +2,190 @@
 
 ---
 
-Gapi is an acronym for Graphical API. It is a revamped rendition intended for my LootCrates plugin (not the core, only the ingame editor)
+Gapi is an acronym for Graphical API.
 
-# AnvilGUI [![Build Status](https://ci.codemc.io/job/WesJD/job/AnvilGUI/badge/icon)](https://ci.codemc.io/job/WesJD/job/AnvilGUI/)
-Easily use anvil guis to get a user's input.
-
-This project was made since there is no way to prompt users with an anvil input with the Spigot / Bukkit API. It requires interaction with NMS and that is a pain in plugins where users have different versions of the server running.
+## Features
+This plugin has 3 different type of built-in menus for use with another plugin. Clickable buttons,
+icons, backgrounds, and more are supplied for the menus.
 
 ## Requirements
-Java 8 and Bukkit / Spigot. Most server versions in the [Spigot Repository](https://hub.spigotmc.org/nexus/) are supported.
-
-### My version isn't supported
-If you are a developer, submit a pull request adding a wrapper module for your version. Otherwise, please create an issue
-on the issues tab.
+Currently, only works for Spigot/Paper 1.17.1 with Java 16 recommended.
 
 ## Usage
+## `? extends AbstractMenu`
+The following is shared between all menus for building:
 
-### As a dependency
+`title(String)` Set the inventory title of the menu
 
-AnvilGUI requires the usage of Maven or a Maven compatible build system.
-```xml
-<dependency>
-    <groupId>net.wesjd</groupId>
-    <artifactId>anvilgui</artifactId>
-    <version>1.5.3-SNAPSHOT</version>
-</dependency>
+`preventClose()` Prevents the menu from closing on user exit
 
-<repository>
-    <id>codemc-snapshots</id>
-    <url>https://repo.codemc.io/repository/maven-snapshots/</url>
-</repository>
-```
+`onClose(Function<Player, Button.Result>)` Run when the menu closes
 
-It is best to be a good citizen and relocate the dependency to within your namespace in order
-to prevent conflicts with other plugins. Here is an example of how to relocate the dependency:
-```xml
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>${shade.version}</version>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>shade</goal>
-                    </goals>
-                    <configuration>
-                        <relocations>
-                            <relocation>
-                                <pattern>net.wesjd.anvilgui</pattern>
-                                <shadedPattern>[YOUR_PLUGIN_PACKAGE].anvilgui</shadedPattern> <!-- Replace [YOUR_PLUGIN_PACKAGE] with your namespace -->
-                            </relocation>
-                        </relocations>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-```
+`validate()` Nice utility method to spot issues before creating menu
 
-### In your plugin
 
-The `AnvilGUI.Builder` class is how you build an AnvilGUI.
-The following methods allow you to modify various parts of the displayed GUI. Javadocs are available [here](http://docs.wesjd.net/AnvilGUI/).
 
-#### `onClose(Consumer<Player>)`
-Takes a `Consumer<Player>` argument that is called when a player closes the anvil gui.
-```java                                             
-builder.onClose(player -> {                         
-    player.sendMessage("You closed the inventory.");
-});                                                 
+## `SimpleMenu : AbstractMenu`
+Use `new SimpleMenu.SBuilder(int)` to create the most basic of menus, with specified columns
+
+`button(int, int, Button.Builder)`
+Set button in menu
+
+`childButton(int, int, ItemStack, Builder, ...)`
+Set button which opens the specified menu on LMB, with optional RMB press event
+
+`background(...)`
+Set the optional background ItemStack of the menu, defaults to a nameless BLACK_STAINED_GLASS_PANE
+
+`parentButton(int, int, ...)`
+Add a back button to return to the previous menu. 
+
+* Parent menu must call `childButton(...)` or equivalent for this to work correctly
+
+
+
+## `ParallaxMenu : SimpleMenu`
+Use `new ParallaxMenu.PBuilder()` to create a menu which
+can take a variable number of buttons, and displays them across 
+pages
+
+`append(Button.Builder button)`
+Add an ordered button to the page list
+
+`appendChild(ItemStack, Builder, ...)`
+Same as above, except opens the target menu on LMB. Optional RMB event specification
+
+`action(Consumer<ParallaxMenu.PBuilder>)`
+Useful for adding multiple elements during a large nested menu construction
+
+
+
+## `TextMenu : AbstractMenu`
+Use `new TextMenu.TBuilder()` to create a menu similar to `AnvilGui`, but with support
+for AbstractMenu features
+
+`leftInput(Button.Builder)`
+Set the left most item in the anvil menu
+
+`text(String)`
+Set the default input text
+
+`onComplete(BiFunction<Player, String, Button.Result>)`
+Run a function on output press. Is required; must be specified or error will occur
+
+These functions can be chained together to easily create menus.
+
+---
+
+## Examples
+
+SimpleMenu:
+```java 
+new SimpleMenu.SBuilder(3)
+    .title("Simple Menu")
+    .background()
+    .button(4, 1, new Button.Builder()
+                    .icon(new ItemBuilder(Material.FEATHER).name("&8Sample item").toItem()))
+    .open(p);
 ``` 
 
-#### `onComplete(BiFunction<Player, String, AnvilGUI.Response>)`
-Takes a `BiFunction<Player, String, AnvilGUI.Response>` argument. The BiFunction is called when a player clicks the output slot.
-The supplied string is what the player has inputted in the renaming field of the anvil gui. You must return an AnvilGUI.Response,
-which can either be `close()`, `text(String)`, or `openInventory(Inventory)`. Returning `close()` will close the inventory; returning
-`text(String)` will keep the inventory open and put the supplied String in the renaming field; returning `openInventory(Inventory)`
-will open the provided inventory, which is useful for when a user has finished their input in GUI menus.
-```java                                                
-builder.onComplete((player, text) -> {                 
-    if(text.equalsIgnoreCase("you")) {                 
-        player.sendMessage("You have magical powers!");
-        return AnvilGUI.Response.close();              
-    } else {                                           
-        return AnvilGUI.Response.text("Incorrect.");   
-    }                                                  
-});                                                    
-```                                                    
+ParallaxMenu:
+```java 
+new ParallaxMenu.PBuilder()
+    .title(ChatColor.DARK_GRAY + "Test Parallax Menu")
+    .action(self -> {
+        Material values[] = Material.values();
+        for (int i = 0; i < 59; i++) {
+            Material material = values[Util.randomRange(0, values.length - 1)];
+            while (!material.isItem()) {
+                material = values[Util.randomRange(0, values.length - 1)];
+            }
+            self.append(new Button.Builder()
+                .icon(new ItemBuilder(material).toItem())
+                .lmb(interact -> {
+                    interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
+                        interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
 
-#### `preventClose()`
-Tells the AnvilGUI to prevent the user from pressing escape to close the inventory.
-Useful for situations like password input to play.
-```java                     
-builder.preventClose();     
-```                         
-
-#### `text(String)`
-Takes a `String` that contains what the initial text in the renaming field should be set to.
-```java                                           
-builder.text("What is the meaning of life?");     
-```  
-
-#### `itemLeft(ItemStack)`
-Takes a custom `ItemStack` to be placed in the left input slot.
-```java                                              
-ItemStack stack = new ItemStack(Material.IRON_SWORD);
-ItemMeta meta = stack.getItemMeta();                 
-meta.setLore(Arrays.asList("Sharp iron sword"));             
-stack.setItemMeta(meta); 
-builder.itemLeft(stack);        
-```         
-
-#### `onLeftInputClick(Consumer<Player>)`
-Takes a `Consumer<Player>` to be executed when the item in the left input slot is clicked.
-```java                                              
-builder.onLeftInputClick(player -> {
-    player.sendMessage("You clicked the left input slot!");
-});        
-```      
-
-#### `itemRight(ItemStack)`
-Takes a custom `ItemStack` to be placed in the right input slot.
-```java                                              
-ItemStack stack = new ItemStack(Material.IRON_INGOT);
-ItemMeta meta = stack.getItemMeta();                 
-meta.setLore(Arrays.asList("A piece of metal"));             
-stack.setItemMeta(meta); 
-builder.itemRight(stack);        
-```         
-
-#### `onRightInputClick(Consumer<Player>)`
-Takes a `Consumer<Player>` to be executed when the item in the right input slot is clicked.
-```java                                              
-builder.onRightInputClick(player -> {
-    player.sendMessage("You clicked the right input slot!");
-});        
-```
-
-#### `title(String)`
-Takes a `String` that will be used as the inventory title. Only displayed in Minecraft 1.14 and above.
-```java                            
-builder.title("Enter your answer");
-```                                
-
-#### `plugin(Plugin)`
-Takes the `Plugin` object that is making this anvil gui. It is needed to register listeners.
-```java                                         
-builder.plugin(pluginInstance);                 
-```                            
-
-#### `open(Player)`
-Takes a `Player` that the anvil gui should be opened for. This method can be called multiple times without needing to create
-a new `AnvilGUI.Builder` object.
-```java              
-builder.open(player);
-```                  
-
-### A full example combining all methods
-```java
-new SimpleMenu.Builder()
-    .onClose(player -> {                                               //called when the inventory is closing
-        player.sendMessage("You closed the inventory.");
-    })
-    .onComplete((player, text) -> {                                    //called when the inventory output slot is clicked
-        if(text.equalsIgnoreCase("you")) {
-            player.sendMessage("You have magical powers!");
-            return AnvilGUI.Response.close();
-        } else {
-            return AnvilGUI.Response.text("Incorrect.");
+                    // do nothing else on click
+                    return Button.Result.OK();
+                })
+            );
         }
     })
-    .preventClose()                                                    //prevents the inventory from being closed
-    .text("What is the meaning of life?")                              //sets the text the GUI should start with
-    .itemLeft(new ItemStack(Material.IRON_SWORD))                      //use a custom item for the first slot
-    .itemRight(new ItemStack(Material.IRON_SWORD))                     //use a custom item for the second slot
-    .onLeftInputClick(player -> player.sendMessage("first sword"))     //called when the left input slot is clicked
-    .onRightInputClick(player -> player.sendMessage("second sword"))   //called when the right input slot is clicked
-    .title("Enter your answer.")                                       //set the title of the GUI (only works in 1.14+)
-    .plugin(myPluginInstance)                                          //set the plugin instance
-    .open(myPlayer);                                                   //opens the GUI for the player provided
+    .open(p);
+``` 
+
+TextMenu:
+```java 
+new TextMenu.TBuilder()
+    .title("Text menu")
+    .text("Default text!")
+    .onComplete((player, s) -> {
+        p.sendMessage("You typed " + s);
+        return Button.Result.OK();
+    })
+    .open(p);
+``` 
+
+### Complex nested example:
+```java
+new SimpleMenu.SBuilder(5)
+    .title(ChatColor.DARK_GRAY + "LootCrates")
+    .background()
+    .childButton(1, 1, new ItemBuilder(Material.CHEST).name("&3&lCrates").toItem(), new ParallaxMenu.PBuilder()
+        .title(ChatColor.DARK_GRAY + "Crates")
+        .action(self -> {
+            /*
+             * CrateList
+             */
+            for (Map.Entry<String, Crate> entry : Main.get().data.crates.entrySet()) {
+                Crate crate = entry.getValue();
+                self.appendChild(new ItemBuilder(crate.itemStack).lore("&8id: " + crate.id).toItem(), new SimpleMenu.SBuilder(5)
+                    .title("Crate: " + crate.id)
+                    .background()
+                    .childButton(3, 1, new ItemBuilder(Material.PAPER).name("&e&lChange Title").lore("&8Current: &r" + crate.title).toItem(), new TextMenu.TBuilder()
+                        .onComplete((player, s) -> Button.Result.back())
+                        .onClose(player -> Button.Result.back()))
+                    .parentButton(4, 4));
+            }
+        })
+        .parentButton(4, 5)
+        .validate()
+    ).childButton(3, 1, new ItemBuilder(Material.EXPERIENCE_BOTTLE).name("&6&lLoot").toItem(), new ParallaxMenu.PBuilder()
+        .title(ChatColor.GOLD + "Loot")
+        .action(self -> {
+            for (Map.Entry<String, LootSet> entry : Main.get().data.lootGroups.entrySet()) {
+                LootSet lootSet = entry.getValue();
+                self.appendChild(new ItemBuilder(entry.getValue().itemStack).lore("&8id: " + entry.getKey() + "\n&8" + entry.getValue().loot.size() + " elements\n&8LMB: &2edit\n&8RMB: &cdelete").toItem(), new ParallaxMenu.PBuilder()
+                    .title("lootSet.id: " + lootSet.id)
+                    .action(c1_interact -> {
+                        Main.get().info("lootSet: " + lootSet);
+                        for (AbstractLoot a : lootSet.loot) {
+                            Main.get().info("a: " + a);
+                            c1_interact.append(new Button.Builder()
+                                    .icon(new ItemBuilder(a.getIcon()).lore(a + "\n&8LMB: &2edit\n&8RMB: &cdelete").toItem())
+                            );
+                        }
+                    })
+                    .parentButton(4, 5)
+                    .validate(),
+                    interact -> {
+                        Main.get().data.lootGroups.remove(entry.getKey());
+                        for (Crate crate : Main.get().data.crates.values()) {
+                            //self.add(new Button.Builder()
+                            //        .)
+                        }
+                        return Button.Result.OK();
+                    }
+                );
+
+            }
+        })
+        .parentButton(4, 5)
+        .validate()
+    ).validate().open(p);
+
 ```
-
-
-## Compilation
-Build with `mvn clean install` using Java 16.
 
 ## License
 This project is licensed under the [MIT License](LICENSE).

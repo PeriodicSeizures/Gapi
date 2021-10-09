@@ -80,31 +80,29 @@ public class CmdTestMenu implements CommandExecutor {
                         .open(p);
                 break;
             } case "parallax": {
-                ParallaxMenu.PBuilder builder = new ParallaxMenu.PBuilder()
-                        .title("Test Parallax Menu");
+                new ParallaxMenu.PBuilder()
+                        .title(ChatColor.DARK_GRAY + "Test Parallax Menu")
+                        .action(self -> {
+                            Material values[] = Material.values();
+                            for (int i = 0; i < 59; i++) {
+                                Material material = values[Util.randomRange(0, values.length - 1)];
+                                while (!material.isItem()) {
+                                    material = values[Util.randomRange(0, values.length - 1)];
+                                }
+                                self.append(new Button.Builder()
+                                        .icon(new ItemBuilder(material).toItem())
+                                        .lmb(interact -> {
+                                            String name = interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " ");
 
-                Material values[] = Material.values();
-                for (int i = 0; i < 59; i++) {
-                    Material material = values[Util.randomRange(0, values.length - 1)];
-                    while (!material.isItem()) {
-                        material = values[Util.randomRange(0, values.length - 1)];
-                    }
-                    builder.append(new Button.Builder()
-                            .icon(new ItemBuilder(material).toItem())
-                            .lmb(interact -> {
-                                String name = interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " ");
+                                            interact.player.sendMessage(ChatColor.GOLD + "I'm a " + name);
 
-                                interact.player.sendMessage(ChatColor.GOLD + "I'm a " + name);
+                                            return Button.Result.OK();
+                                        })
+                                );
+                            }
+                        })
+                        .open(p);
 
-                                //interact.player.sendMessage(
-                                //        ChatColor.GOLD + "I'm " + (
-                                //                new HashSet<>(Arrays.asList((int)'a', (int)'e', (int)'i', (int)'o', (int)'u')).contains(Character.toLowerCase(name.indexOf(0)))
-                                //        ? "an " : "a ") + name);
-                                return Button.Result.OK();
-                            }));
-                }
-
-                builder.open(p);
                 break;
             } case "text": {
                 new TextMenu.TBuilder()
