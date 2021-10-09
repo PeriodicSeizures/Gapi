@@ -154,6 +154,8 @@ public abstract class AbstractMenu {
             closeInventory(true);
         else if (result.goBack())
             parentMenuBuilder.open(player);
+        else if (result.doRefresh())
+            openInventory();
     }
 
     /**
@@ -244,7 +246,7 @@ public abstract class AbstractMenu {
          * @param builder parent builder
          * @return this
          */
-        final Builder parent(Builder builder) {
+        public final Builder parent(Builder builder) {
             parentMenuBuilder = builder;
             return this;
         }

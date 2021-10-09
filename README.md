@@ -89,7 +89,7 @@ new SimpleMenu.SBuilder(3)
     .open(p);
 ``` 
 
-ParallaxMenu:
+pParallaxMenu:
 ```java 
 new ParallaxMenu.PBuilder()
     .title(ChatColor.DARK_GRAY + "Test Parallax Menu")

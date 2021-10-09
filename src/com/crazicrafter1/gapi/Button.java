@@ -40,12 +40,14 @@ public class Button {
         private AbstractMenu.Builder builder;
         private boolean close;
         private boolean back;
+        private boolean refresh;
 
-        public Result(boolean allowTake, AbstractMenu.Builder builder, boolean close, boolean back) {
+        public Result(boolean allowTake, AbstractMenu.Builder builder, boolean close, boolean back, boolean refresh) {
             this.allowTake = allowTake;
             this.builder = builder;
             this.close = close;
             this.back = back;
+            this.refresh = refresh;
         }
 
         public boolean allowsTake() {
@@ -64,28 +66,36 @@ public class Button {
             return back;
         }
 
+        //public boolean doRefresh() {
+        //    return refresh;
+        //}
+
         /**
          * To be called by Button return to do
          * something simple at end of click
          */
         public static Result take() {
-            return new Result(true, null, false, false);
+            return new Result(true, null, false, false, false);
         }
 
         public static Result open(AbstractMenu.Builder builder) {
-            return new Result(false, builder, false, false);
+            return new Result(false, builder, false, false, false);
         }
 
         public static Result close() {
-            return new Result(false, null, true, false);
+            return new Result(false, null, true, false, false);
         }
 
         public static Result back() {
-            return new Result(false, null, false, true);
+            return new Result(false, null, false, true, false);
         }
 
         public static Result OK() {
-            return new Result(false, null, false, false);
+            return new Result(false, null, false, false, false);
+        }
+
+        public static Result refresh() {
+            return new Result(false, null, false, false, true);
         }
     }
 

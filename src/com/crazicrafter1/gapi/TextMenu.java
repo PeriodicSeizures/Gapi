@@ -38,7 +38,7 @@ public class TextMenu extends AbstractMenu {
 
     private int containerId;
 
-    public TextMenu(Player player,
+    private TextMenu(Player player,
                     String inventoryTitle,
                     HashMap<Integer, Button> buttons,
                     boolean preventClose,
