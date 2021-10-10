@@ -9,10 +9,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CmdTestMenu implements CommandExecutor {
-
+static ItemStack itemStack = null;
     public CmdTestMenu(JavaPlugin plugin) {
         plugin.getCommand("testmenu").setExecutor(this);
     }
@@ -36,7 +37,7 @@ public class CmdTestMenu implements CommandExecutor {
                         .title("Simple Menu")
                         .background()
                         .button(4, 1, new Button.Builder()
-                                        .icon(new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem()))
+                                        .icon(() -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem()))
                         .open(p);
 
                 break;
@@ -44,15 +45,15 @@ public class CmdTestMenu implements CommandExecutor {
                 new SimpleMenu.SBuilder(3)
                         .title("Test Nested Menu")
                         .background()
-                        .childButton(4, 1, new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                        .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
                                 new SimpleMenu.SBuilder(3)
                                         .title("Child menu 1")
                                         .background()
-                                        .childButton(4, 1, new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                                        .childButton(4, 1, () ->new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
                                                 new SimpleMenu.SBuilder(3)
                                                         .title("Child menu 2")
                                                         .background()
-                                                        .childButton(4, 1, new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                                                        .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
                                                                 new SimpleMenu.SBuilder(3)
                                                                         .title("Child menu 3")
                                                                         .background()
@@ -68,7 +69,7 @@ public class CmdTestMenu implements CommandExecutor {
                         .preventClose()
                         .button(4, 0,
                                 new Button.Builder()
-                                        .icon(new ItemBuilder(Material.IRON_DOOR).name("Unlock menu").toItem())
+                                        .icon(() -> new ItemBuilder(Material.IRON_DOOR).name("Unlock menu").toItem())
                                         .lmb(interact -> EnumResult.CLOSE))
                         .open(p);
                 break;
@@ -82,8 +83,9 @@ public class CmdTestMenu implements CommandExecutor {
                                 while (!material.isItem()) {
                                     material = values[Util.randomRange(0, values.length - 1)];
                                 }
+                                Material finalMaterial = material;
                                 self.append(new Button.Builder()
-                                        .icon(new ItemBuilder(material).toItem())
+                                        .icon(() -> new ItemBuilder(finalMaterial).toItem())
                                         .lmb(interact -> {
                                             interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
                                                     interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));

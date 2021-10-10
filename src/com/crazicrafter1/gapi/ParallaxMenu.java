@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ParallaxMenu extends SimpleMenu {
 
@@ -49,7 +50,7 @@ public class ParallaxMenu extends SimpleMenu {
             // Previous page
             //
             button(0, 5, new Button.Builder()
-                    .icon(new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem())
+                    .icon(() -> new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem())
                     .lmb(interact -> {
                         prevPage();
                         return EnumResult.OK;
@@ -60,7 +61,7 @@ public class ParallaxMenu extends SimpleMenu {
 
         if (page < getMaxPages()) {
             button(8, 5, new Button.Builder()
-                    .icon(new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem())
+                    .icon(() -> new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem())
                     .lmb(interact -> {
                         nextPage();
                         return EnumResult.OK;
@@ -134,21 +135,21 @@ public class ParallaxMenu extends SimpleMenu {
         /**
          * Add unit which open a menu on click
          */
-        public PBuilder appendChild(ItemStack itemStack, Builder menuToOpen) {
+        public PBuilder appendChild(Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
             menuToOpen.parent(this);
 
             orderedButtons.add(new Button.Builder()
-                    .icon(itemStack)
+                    .icon(getItemStackFunction)
                     .bind(menuToOpen, EnumPress.LMB)
             );
             return this;
         }
 
-        public PBuilder appendChild(ItemStack itemStack, Builder menuToOpen,
+        public PBuilder appendChild(Supplier<ItemStack> getItemStackFunction, Builder menuToOpen,
                                     Function<Button.Interact, Object> rightClickListener) {
             menuToOpen.parent(this);
             orderedButtons.add(new Button.Builder()
-                    .icon(itemStack)
+                    .icon(getItemStackFunction)
                     .bind(menuToOpen, EnumPress.LMB)
                     .rmb(rightClickListener)
             );
@@ -168,11 +169,11 @@ public class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
-        public PBuilder childButton(int x, int y, ItemStack itemStack, Builder otherMenu) {
+        public PBuilder childButton(int x, int y, Supplier<ItemStack> getItemStackFunction, Builder otherMenu) {
             Validate.isTrue(!(x >= ITEM_X && x <= ITEM_X2 && y >= ITEM_Y && y <= ITEM_Y2),
                     "x, y must not be within center block (" + x + ", " + y + ")");
             Validate.isTrue(!((x == 0 || x == 8) && y == 5), "button must not overlap page buttons");
-            return (PBuilder) super.childButton(x, y, itemStack, otherMenu);
+            return (PBuilder) super.childButton(x, y, getItemStackFunction, otherMenu);
         }
 
         @Override
@@ -210,15 +211,15 @@ public class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
-        public PBuilder parentButton(int x, int y, ItemStack itemStack) {
+        public PBuilder parentButton(int x, int y, Supplier<ItemStack> getItemStackFunction) {
             Validate.isTrue(!(x >= ITEM_X && x <= ITEM_X2 && y >= ITEM_Y && y <= ITEM_Y2),
                     "x, y must not be within center block (" + x + ", " + y + ")");
-            return (ParallaxMenu.PBuilder) super.parentButton(x, y, itemStack);
+            return (ParallaxMenu.PBuilder) super.parentButton(x, y, getItemStackFunction);
         }
 
         @Override
-        public PBuilder bind(int x, int y, EnumPress press, ItemStack defItemStack, Builder menuToOpen) {
-            return (PBuilder) super.bind(x, y, press, defItemStack, menuToOpen);
+        public PBuilder bind(int x, int y, EnumPress press, Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
+            return (PBuilder) super.bind(x, y, press, getItemStackFunction, menuToOpen);
         }
 
         @Override

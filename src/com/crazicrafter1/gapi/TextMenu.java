@@ -164,14 +164,15 @@ public class TextMenu extends AbstractMenu {
             // must be not null and non-air material
             Button.Builder LEFT = buttons.get(Slot.SLOT_LEFT);
             if (LEFT == null) {
-                LEFT = new Button.Builder().icon(new ItemStack(Material.NAME_TAG));
-            } else if (LEFT.get().itemStack == null) {
-                LEFT.icon(new ItemBuilder(Material.PAPER).toItem());
+                LEFT = new Button.Builder().icon(() -> new ItemStack(Material.NAME_TAG));
+            } else if (LEFT.get().getItemStackFunction == null) {
+                LEFT.icon(() -> new ItemBuilder(Material.PAPER).toItem());
             }
 
             if (itemText != null) {
                 // apply text to item
-                LEFT.icon(new ItemBuilder(LEFT.get().itemStack).name(itemText).toItem());
+                ItemStack itemStack = LEFT.get().getItemStackFunction.get();
+                LEFT.icon(() -> new ItemBuilder(itemStack).name(itemText).toItem());
             }
 
             buttons.put(Slot.SLOT_LEFT, LEFT);

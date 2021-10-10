@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Button {
 
@@ -102,18 +103,21 @@ public class Button {
     }
      */
 
-    ItemStack itemStack;
+    //ItemStack itemStack;
+    Supplier<ItemStack> getItemStackFunction;
     final Function<Interact, Object> leftClickFunction;
     final Function<Interact, Object> middleClickFunction;
     final Function<Interact, Object> rightClickFunction;
     final Function<Interact, Object> numberKeyFunction;
 
-    Button(ItemStack itemStack,
+    Button(//ItemStack itemStack,
+           Supplier<ItemStack> getItemStackFunction,
            Function<Interact, Object> leftClickFunction,
            Function<Interact, Object> middleClickFunction,
            Function<Interact, Object> rightClickFunction,
            Function<Interact, Object> numberKeyFunction) {
-        this.itemStack = itemStack;
+        //this.itemStack = itemStack;
+        this.getItemStackFunction = getItemStackFunction;
         this.leftClickFunction = leftClickFunction;
         this.middleClickFunction = middleClickFunction;
         this.rightClickFunction = rightClickFunction;
@@ -121,14 +125,22 @@ public class Button {
     }
 
     public static class Builder {
-        private ItemStack itemStack;
+        //private ItemStack itemStack;
+        private Supplier<ItemStack> getItemStackFunction;
         private Function<Interact, Object> leftClickFunction;
         private Function<Interact, Object> middleClickFunction;
         private Function<Interact, Object> rightClickFunction;
         private Function<Interact, Object> numberKeyFunction;
 
-        public Builder icon(ItemStack itemStack) {
-            this.itemStack = itemStack;
+        //public Builder icon(ItemStack itemStack) {
+        //    this.itemStack = itemStack;
+        //    return this;
+        //}
+
+
+
+        public Builder icon(Supplier<ItemStack> getItemStackFunction) {
+            this.getItemStackFunction = getItemStackFunction;
             return this;
         }
 
@@ -173,7 +185,8 @@ public class Button {
         }
 
         public Button get() {
-            return new Button(itemStack,
+            return new Button(//itemStack,
+                              getItemStackFunction,
                               leftClickFunction,
                               middleClickFunction,
                               rightClickFunction,

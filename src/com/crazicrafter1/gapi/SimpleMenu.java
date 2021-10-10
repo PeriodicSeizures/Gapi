@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SimpleMenu extends AbstractMenu {
     private final ItemStack background;
@@ -89,12 +90,12 @@ public class SimpleMenu extends AbstractMenu {
          * Set the menu to open with default LMB bound button
          * @param x horizontal position
          * @param y vertical position
-         * @param itemStack button icon
+         * @param getItemStackFunction button icon
          * @param menuToOpen
          * @return this
          */
         public SBuilder childButton(int x, int y,
-                                    ItemStack itemStack, Builder menuToOpen) {
+                                    Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
 
             // print before and after for debug
             Main.getInstance().debug("Got Builder: " + menuToOpen);
@@ -102,17 +103,17 @@ public class SimpleMenu extends AbstractMenu {
 
             menuToOpen.parent(this);
 
-            return this.bind(x, y, EnumPress.LMB, itemStack, menuToOpen);
+            return this.bind(x, y, EnumPress.LMB, getItemStackFunction, menuToOpen);
         }
 
         public SBuilder childButton(int x, int y,
-                                    ItemStack itemStack, Builder menuToOpen,
+                                    Supplier<ItemStack> getItemStackFunction, Builder menuToOpen,
                                     Function<Button.Interact, Object> rightClickListener) {
 
             menuToOpen.parent(this);
 
             return this.button(x, y, new Button.Builder()
-                    .icon(itemStack)
+                    .icon(getItemStackFunction)
                     .bind(menuToOpen, EnumPress.LMB)
                     .rmb(rightClickListener));
         }
@@ -144,11 +145,11 @@ public class SimpleMenu extends AbstractMenu {
          * @return
          */
         public SBuilder parentButton(int x, int y) {
-            return this.parentButton(x, y, PREV_1);
+            return this.parentButton(x, y, () -> PREV_1);
         }
 
         public SBuilder parentButton(int x, int y,
-                                     ItemStack itemStack) {
+                                     Supplier<ItemStack> getItemStackFunction) {
             Validate.isTrue(x >= 0, "x must be greater or equal to 0 (" + x + ")");
             Validate.isTrue(x <= 8, "x must be less or equal to 8 (" + x + ")");
             Validate.isTrue(y >= 0, "y must be greater or equal to 0 (" + y + ")");
@@ -157,7 +158,7 @@ public class SimpleMenu extends AbstractMenu {
             //this.parentMenuBuilder =
 
             return button(x, y, new Button.Builder()
-                    .icon(itemStack)
+                    .icon(getItemStackFunction)
                     .lmb(interact -> EnumResult.BACK));
 
             //return this.bind(x, y, EnumPress.LMB, itemStack, parentMenuBuilder);
@@ -168,23 +169,23 @@ public class SimpleMenu extends AbstractMenu {
          * @param x horizontal position
          * @param y vertical position
          * @param press bind to which event
-         * @param defItemStack button icon
+         * @param getItemStackFunction button icon lambda
          * @param menuToOpen the menu to open on press
          * @return this
          */
         public SBuilder bind(int x, int y,
                              EnumPress press,
-                             ItemStack defItemStack, Builder menuToOpen) {
+                             Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
             //menuToOpen.parent(this);
             //this.parent(menuToOpen);
 
-            this.getOrMakeButton(x, y, defItemStack)
+            this.getOrMakeButton(x, y, getItemStackFunction)
                     .bind(menuToOpen, press);
             return this;
         }
 
-        final Button.Builder getOrMakeButton(int x, int y, ItemStack defItemStack) {
-            return super.getOrMakeButton(y*9 + x, defItemStack);
+        final Button.Builder getOrMakeButton(int x, int y, Supplier<ItemStack> getItemStackFunction) {
+            return super.getOrMakeButton(y*9 + x, getItemStackFunction);
         }
 
         public SimpleMenu open(Player player) {

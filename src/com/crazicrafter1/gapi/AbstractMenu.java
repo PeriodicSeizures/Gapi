@@ -15,7 +15,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public abstract class AbstractMenu {
 
@@ -28,11 +30,17 @@ public abstract class AbstractMenu {
     final HashMap<Integer, Button> buttons;
     boolean preventClose;
     final Function<Player, EnumResult> closeFunction;
-
-    // parent menu
     private final AbstractMenu.Builder parentMenuBuilder;
+    //private final AbstractMenu.Builder originalBuilder;
+    //private int depth;
+    //Consumer<Integer> refreshFunction;
 
     Inventory inventory;
+
+
+
+
+
 
     /**
      * Needed to prevent infinite recursion
@@ -45,7 +53,11 @@ public abstract class AbstractMenu {
                  HashMap<Integer, Button> buttons,
                  boolean preventClose,
                  Function<Player, EnumResult> closeFunction,
-                 AbstractMenu.Builder parentMenuBuilder) {
+                 AbstractMenu.Builder parentMenuBuilder
+                 //AbstractMenu.Builder originalBuilder,
+                 //int depth,
+                 //Consumer<Integer> refreshFunction
+    ) {
         Validate.notNull(inventoryTitle, "Inventory must be given a title");
 
         this.player = player;
@@ -55,6 +67,12 @@ public abstract class AbstractMenu {
         this.preventClose = preventClose;
         this.closeFunction = closeFunction;
         this.parentMenuBuilder = parentMenuBuilder;
+        //this.originalBuilder = originalBuilder;
+        //this.depth = depth;
+        //this.refreshFunction = refreshFunction;
+
+
+        //this.depth = parentMenuBuilder.
     }
 
     void openInventory() {
@@ -65,9 +83,10 @@ public abstract class AbstractMenu {
         // but should't be called in
 
         for (Map.Entry<Integer,Button> entry : buttons.entrySet()) {
+            ItemStack itemStack = entry.getValue().getItemStackFunction.get();
             Main.getInstance().debug(entry.getKey() + " " +
-                    entry.getValue().itemStack.getType() + " " + entry.getValue().itemStack.getItemMeta().getDisplayName());
-            inventory.setItem(entry.getKey(), entry.getValue().itemStack);
+                    itemStack.getType() + " " + itemStack.getItemMeta().getDisplayName());
+            inventory.setItem(entry.getKey(), itemStack);
         }
 
         //player.openInventory(inventory);
@@ -152,7 +171,7 @@ public abstract class AbstractMenu {
                 case GRAB_ITEM -> event.setCancelled(false);
                 case CLOSE -> closeInventory(true);
                 case BACK -> parentMenuBuilder.open(player);
-                case REFRESH -> openInventory();
+                case REFRESH -> openInventory(); //originalBuilder.open(player); //openInventory();
                 case OK -> {
                     // do nothing
                 }
@@ -212,6 +231,12 @@ public abstract class AbstractMenu {
         buttons.remove(y*9 + x);
     }
 
+    /**
+     * Used to easily build a Menu from scratch
+     * Everything within this class is a one time
+     * construction that will require a refresh/construct method
+     * to reload everything
+     */
     public static abstract class Builder {
 
         final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
@@ -222,6 +247,13 @@ public abstract class AbstractMenu {
         Function<Player, EnumResult> closeFunction;
         AbstractMenu.Builder parentMenuBuilder;
 
+        //Consumer<Integer> func;
+
+        // new AbstractMenu.Builder()
+        Supplier<Builder> makeMethod;
+
+        //TODO might be able to remove
+        //int depth = 0;
 
 
         public Builder title(String title) {
@@ -253,6 +285,7 @@ public abstract class AbstractMenu {
          */
         final Builder parent(Builder builder) {
             Validate.notNull(builder);
+            //this.depth = builder.depth + 1;
             parentMenuBuilder = builder;
             return this;
         }
@@ -272,8 +305,10 @@ public abstract class AbstractMenu {
         //    return this;
         //}
 
-        final Button.Builder getOrMakeButton(int slot, ItemStack defItemStack) {
-            Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(defItemStack));
+        // reconstruction refresh function
+
+        final Button.Builder getOrMakeButton(int slot, Supplier<ItemStack> getItemStackFunction) {
+            Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(getItemStackFunction));
 
             if (button == null)
                 button = buttons.get(slot);
