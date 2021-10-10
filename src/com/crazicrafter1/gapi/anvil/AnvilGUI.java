@@ -184,6 +184,7 @@ public class AnvilGUI {
 
         open = false;
 
+        // han
         HandlerList.unregisterAll(listener);
 
         // special case for menu event invoked close
@@ -208,6 +209,8 @@ public class AnvilGUI {
         return inventory;
     }
 
+    // Instance class, is basically a member of this class
+    // Can access class members
     /**
      * Simply holds the listeners for the GUI
      */

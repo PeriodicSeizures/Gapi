@@ -54,6 +54,7 @@ public class SimpleMenu extends AbstractMenu {
             }
         }
 
+        // Will push event closeInventory if an inventory is opened
         player.openInventory(inventory);
 
         super.openInventory();

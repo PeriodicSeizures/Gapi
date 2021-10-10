@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CmdTestMenu implements CommandExecutor {
-static ItemStack itemStack = null;
+
     public CmdTestMenu(JavaPlugin plugin) {
         plugin.getCommand("testmenu").setExecutor(this);
     }
@@ -63,7 +63,29 @@ static ItemStack itemStack = null;
                                         .parentButton(4, 2))
                         .open(p);
                 break;
-            } case "locked": {
+            } case "text": {
+
+                new SimpleMenu.SBuilder(3)
+                        .title("parent")
+                        .childButton(4, 1, () -> new ItemStack(Material.ANVIL),
+                                new TextMenu.TBuilder()
+                                        .title("Text menu")
+                                        .text("Default text!")
+                                        //.preventClose()
+                                        .onClose(player -> EnumResult.BACK)
+                                        .onComplete((player, s) -> {
+                                            p.sendMessage("You typed " + s);
+                                            return EnumResult.OK;
+                                        })
+                                )
+                        .open(p);
+
+
+                break;
+            }
+
+
+            case "locked": {
                 new SimpleMenu.SBuilder(1)
                         .title("Test Lockable Menu")
                         .preventClose()
@@ -99,7 +121,7 @@ static ItemStack itemStack = null;
                         .open(p);
 
                 break;
-            } case "text": {
+            } case "text1": {
                 new TextMenu.TBuilder()
                         .title("Text menu")
                         .text("Default text!")

@@ -32,6 +32,7 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void event(InventoryCloseEvent event) {
+        Main.getInstance().debug("InventoryCloseEvent()");
         AbstractMenu menu = AbstractMenu.openMenus.get(event.getPlayer().getUniqueId());
 
         // If the event is stupid

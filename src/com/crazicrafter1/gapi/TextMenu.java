@@ -184,6 +184,8 @@ public class TextMenu extends AbstractMenu {
         public TextMenu open(Player player) {
             Validate.notNull(player, "Player cannot be null");
 
+            this.validate();
+
             HashMap<Integer, Button> btns = new HashMap<>();
             buttons.forEach((i, b) -> btns.put(i, b.get()));
 

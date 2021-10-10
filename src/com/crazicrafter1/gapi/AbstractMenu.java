@@ -2,6 +2,7 @@ package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -92,6 +93,7 @@ public abstract class AbstractMenu {
         //player.openInventory(inventory);
         openMenus.put(player.getUniqueId(), this);
         open = true;
+        Main.getInstance().debug("Putting AbstractMenu into HashMap");
     }
 
 
@@ -170,8 +172,18 @@ public abstract class AbstractMenu {
             switch (result) {
                 case GRAB_ITEM -> event.setCancelled(false);
                 case CLOSE -> closeInventory(true);
-                case BACK -> parentMenuBuilder.open(player);
-                case REFRESH -> openInventory(); //originalBuilder.open(player); //openInventory();
+                case BACK -> new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        parentMenuBuilder.open(player);
+                    }
+                }.runTaskLater(Main.getInstance(), 0);
+                case REFRESH -> new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        openInventory(); //originalBuilder.open(player); //openInventory();
+                    }
+                }.runTaskLater(Main.getInstance(), 0);
                 case OK -> {
                     // do nothing
                 }
@@ -208,12 +220,13 @@ public abstract class AbstractMenu {
             closeInventory(false);
 
             if (preventClose) {
+                //parentMenuBuilder.open(player);
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         openInventory();
                     }
-                }.runTaskLater(Main.getInstance(), 1);
+                }.runTaskLater(Main.getInstance(), 0);
             } else {
                 Main.getInstance().debug("Removing AbstractMenu from HashMap");
                 openMenus.remove(player.getUniqueId());
