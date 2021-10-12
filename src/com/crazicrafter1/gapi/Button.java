@@ -205,11 +205,11 @@ public class Button {
         public Builder append(EnumPress press, Function<Interact, Object> func) {
 
             if (press != null)
-                return switch (press) {
-                    case LMB -> lmb(func);
-                    case MMB -> mmb(func);
-                    case RMB -> rmb(func);
-                    case NUM -> num(func);
+                switch (press) {
+                    case LMB: return lmb(func);
+                    case MMB: return mmb(func);
+                    case RMB: return rmb(func);
+                    case NUM: return num(func);
                 };
             throw new NullPointerException("Supplied EnumPress must not be null");
         }

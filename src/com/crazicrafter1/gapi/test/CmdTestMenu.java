@@ -22,8 +22,10 @@ public class CmdTestMenu implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player p))
+        if (!(sender instanceof Player))
             return false;
+
+        Player p = (Player) sender;
 
         /*
          * How to reference this parent menu

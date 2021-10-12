@@ -44,10 +44,9 @@ public class MainTest {
             //Object instance = classToLoad.newInstance();
             //Object result = method.invoke(instance);
 
-            for (var method : classToLoad.getMethods()) {
-                System.out.println("Found method: " + method.getName());
-
-            }
+            //for (var method : classToLoad.getMethods()) {
+            //    System.out.println("Found method: " + method.getName());
+            //}
 
         } catch (Exception e) {
             e.printStackTrace();

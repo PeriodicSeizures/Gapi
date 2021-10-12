@@ -2,6 +2,7 @@ package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import org.apache.commons.lang.Validate;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -63,7 +64,7 @@ public abstract class AbstractMenu {
 
         this.player = player;
 
-        this.inventoryTitle = inventoryTitle;
+        this.inventoryTitle = ChatColor.translateAlternateColorCodes('&', inventoryTitle);
         this.buttons = buttons;
         this.preventClose = preventClose;
         this.closeFunction = closeFunction;
@@ -160,18 +161,16 @@ public abstract class AbstractMenu {
     }
 
     void invokeResult(InventoryClickEvent event, Object o) {
-        if (o instanceof AbstractMenu.Builder builder) {
-            builder.open(player);
-        } else if (o instanceof EnumResult result) {
+        if (o instanceof AbstractMenu.Builder) {
+            ((AbstractMenu.Builder)o).open(player);
+        } else if (o instanceof EnumResult) {
+            EnumResult result = (EnumResult) o;
             Main.getInstance().debug("Result: " + result.name());
 
             switch (result) {
-                case GRAB_ITEM -> event.setCancelled(false);
-                case CLOSE -> {
-                    //route = EnumRoute.CLOSED;
-                    closeInventory(true);
-                }
-                case BACK -> new BukkitRunnable() {
+                case GRAB_ITEM: event.setCancelled(false); break;
+                case CLOSE: closeInventory(true); break;
+                case BACK: new BukkitRunnable() {
                     @Override
                     public void run() {
                         status = Status.REROUTING;
@@ -179,16 +178,15 @@ public abstract class AbstractMenu {
                         //parentMenuBuilderopenInventory(false);
                     }
                 }.runTaskLater(Main.getInstance(), 0);
-                case REFRESH -> new BukkitRunnable() {
+                break;
+                case REFRESH: new BukkitRunnable() {
                     @Override
                     public void run() {
                         inventory.clear();
                         openInventory(false); //originalBuilder.open(player); //openInventory();
                     }
                 }.runTaskLater(Main.getInstance(), 0);
-                case OK -> {
-                    // do nothing
-                }
+                break;
             }
         }
         else
