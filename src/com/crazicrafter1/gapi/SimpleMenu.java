@@ -21,10 +21,11 @@ public class SimpleMenu extends AbstractMenu {
                HashMap<Integer, Button> buttons,
                boolean preventClose,
                Function<Player, EnumResult> closeFunction,
-               AbstractMenu.Builder parentMenuBuilder,
+               Builder parentBuilder,
+               Builder thisBuilder,
                ItemStack background,
                int columns) {
-        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentMenuBuilder);
+        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentBuilder, thisBuilder);
         this.background = background;
         this.columns = columns;
     }
@@ -33,7 +34,7 @@ public class SimpleMenu extends AbstractMenu {
     void onInventoryClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Object o = invokeButtonAt(event);
-        Main.getInstance().debug("" + o);
+        Main.getInstance().debug("Result: " + o.getClass().getSimpleName());
         invokeResult(event, o);
     }
 
@@ -45,8 +46,12 @@ public class SimpleMenu extends AbstractMenu {
         buttons.remove(y*9 + x);
     }
 
-    void openInventory() {
-        this.inventory = Bukkit.createInventory(null, columns*9, inventoryTitle);
+    @Override
+    void openInventory(boolean sendOpenPacket) {
+        if (sendOpenPacket) {
+            this.inventory = Bukkit.createInventory(null, columns * 9, inventoryTitle);
+            player.openInventory(inventory);
+        }
 
         if (background != null) {
             for (int i = 0; i < inventory.getSize(); i++) {
@@ -54,10 +59,11 @@ public class SimpleMenu extends AbstractMenu {
             }
         }
 
+        //if (sendOpenPacket)
         // Will push event closeInventory if an inventory is opened
-        player.openInventory(inventory);
 
-        super.openInventory();
+
+        super.openInventory(sendOpenPacket);
     }
 
     public static class SBuilder extends Builder {
@@ -201,10 +207,11 @@ public class SimpleMenu extends AbstractMenu {
                                              preventClose,
                                              closeFunction,
                                              parentMenuBuilder,
+                                             this,
                                              background,
                                              columns);
 
-            menu.openInventory();
+            menu.openInventory(true);
 
             return menu;
         }

@@ -16,9 +16,6 @@ import java.util.function.Supplier;
 
 public class ParallaxMenu extends SimpleMenu {
 
-    private final ArrayList<Button> orderedButtons;
-    private int page = 1;
-
     private static final int ITEM_X = 1;
     private static final int ITEM_Y = 1;
     private static final int ITEM_W = 7;
@@ -28,23 +25,35 @@ public class ParallaxMenu extends SimpleMenu {
     private static final int ITEM_Y2 = ITEM_Y + ITEM_H - 1;
     private static final int SIZE = ITEM_W * ITEM_H;
 
+    //private final ArrayList<Button> orderedButtons;
+    private int page = 1;
+
+    //private Consumer<ParallaxMenu.PBuilder> action;
+    private Function<Builder, ArrayList<Button>> orderedButtonsFunc;
+
     private ParallaxMenu(Player player,
                          String inventoryTitle,
                          HashMap<Integer, Button> buttons,
                          boolean preventClose,
                          Function<Player, EnumResult> closeFunction,
-                         AbstractMenu.Builder parentMenuBuilder,
+                         Builder parentBuilder,
+                         Builder thisBuilder,
                          ItemStack background,
-                         ArrayList<Button> orderedButtons) {
-        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentMenuBuilder, background, 6);
-        this.orderedButtons = orderedButtons;
+                         //ArrayList<Button> orderedButtons
+                         Function<Builder, ArrayList<Button>> orderedButtonsFunc
+    ) {
+        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentBuilder, thisBuilder, background, 6);
+        //this.orderedButtons = orderedButtons;
+        this.orderedButtonsFunc = orderedButtonsFunc;
     }
 
     @Override
-    void openInventory() {
-        this.inventory = Bukkit.createInventory(null, 6*9, inventoryTitle);
+    void openInventory(boolean sendOpenPacket) {
+        //this.inventory = Bukkit.createInventory(null, 6*9, inventoryTitle);
 
         // clear all buttons in square
+
+        ArrayList<Button> orderedButtons = orderedButtonsFunc.apply(thisBuilder);
 
         if (page > 1) {
             // Previous page
@@ -59,17 +68,18 @@ public class ParallaxMenu extends SimpleMenu {
         } else
             delButton(0, 5);
 
-        if (page < getMaxPages()) {
+        if (page < getMaxPages(orderedButtons.size())) {
             button(8, 5, new Button.Builder()
                     .icon(() -> new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem())
                     .lmb(interact -> {
-                        nextPage();
+                        nextPage(orderedButtons.size());
                         return EnumResult.OK;
                     }).get());
         } else
             delButton(8, 5);
 
         // now assign center block items
+
         final int size = orderedButtons.size();
 
         int startIndex = (page-1) * SIZE;
@@ -93,72 +103,41 @@ public class ParallaxMenu extends SimpleMenu {
             }
         }
 
-        player.openInventory(inventory);
+        //player.openInventory(inventory);
 
-        super.openInventory();
+        super.openInventory(sendOpenPacket);
     }
 
-    private int getMaxPages() {
-        return 1 + (orderedButtons.size() - 1) / SIZE;
+    private int getMaxPages(int size) {
+        return 1 + (size - 1) / SIZE;
     }
 
     private void prevPage() {
         if (page > 1) {
             page--;
-            openInventory();
+            openInventory(true);
         }
     }
 
-    private void nextPage() {
-        if (page < getMaxPages()) {
+    private void nextPage(int size) {
+        if (page < getMaxPages(size)) {
             page++;
-            openInventory();
+            openInventory(true);
         }
     }
 
     public static class PBuilder extends SBuilder {
 
-        private final ArrayList<Button.Builder> orderedButtons = new ArrayList<>();
+        //private final ArrayList<Button.Builder> orderedButtons = new ArrayList<>();
+
+        private Function<Builder, ArrayList<Button>> orderedButtonsFunc;
 
         public PBuilder() {
             super(6);
         }
 
-        /**
-         * Add unit to list
-         */
-        public PBuilder append(Button.Builder button) {
-            orderedButtons.add(button);
-            return this;
-        }
-
-        /**
-         * Add unit which open a menu on click
-         */
-        public PBuilder appendChild(Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
-            menuToOpen.parent(this);
-
-            orderedButtons.add(new Button.Builder()
-                    .icon(getItemStackFunction)
-                    .bind(menuToOpen, EnumPress.LMB)
-            );
-            return this;
-        }
-
-        public PBuilder appendChild(Supplier<ItemStack> getItemStackFunction, Builder menuToOpen,
-                                    Function<Button.Interact, Object> rightClickListener) {
-            menuToOpen.parent(this);
-            orderedButtons.add(new Button.Builder()
-                    .icon(getItemStackFunction)
-                    .bind(menuToOpen, EnumPress.LMB)
-                    .rmb(rightClickListener)
-            );
-            return this;
-        }
-
-        public PBuilder action(Consumer<ParallaxMenu.PBuilder> action) {
-            orderedButtons.clear();
-            action.accept(this);
+        public PBuilder action(Function<Builder, ArrayList<Button>> orderedButtonsFunc) {
+            this.orderedButtonsFunc = orderedButtonsFunc;
 
             return this;
         }
@@ -229,19 +208,17 @@ public class ParallaxMenu extends SimpleMenu {
             HashMap<Integer, Button> btns = new HashMap<>();
             buttons.forEach((i, b) -> btns.put(i, b.get()));
 
-            ArrayList<Button> obtns = new ArrayList<>();
-            orderedButtons.forEach((b) -> obtns.add(b.get()));
-
             ParallaxMenu menu = new ParallaxMenu(player,
                                                  title,
                                                  btns,
                                                  preventClose,
                                                  closeFunction,
                                                  parentMenuBuilder,
+                                                 this,
                                                  background,
-                                                 obtns);
+                                                 orderedButtonsFunc);
 
-            menu.openInventory();
+            menu.openInventory(true);
 
             return menu;
         }

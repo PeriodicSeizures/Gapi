@@ -1,19 +1,14 @@
-package com.crazicrafter1.gapi.anvil;
+package com.crazicrafter1.gapi.temp_ignore;
 
-import net.minecraft.core.BlockPosition;
+import com.crazicrafter1.gapi.temp_ignore.anvil.AnvilContainer1_17_1_R1;
 import net.minecraft.network.chat.ChatComponentText;
-import net.minecraft.network.chat.ChatMessage;
 import net.minecraft.network.protocol.game.PacketPlayOutCloseWindow;
 import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
 import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.IInventory;
-import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.inventory.Container;
-import net.minecraft.world.inventory.ContainerAccess;
-import net.minecraft.world.inventory.ContainerAnvil;
 import net.minecraft.world.inventory.Containers;
+import net.wesjd.anvilgui.version.VersionWrapper;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_17_R1.event.CraftEventFactory;
 import org.bukkit.entity.Player;

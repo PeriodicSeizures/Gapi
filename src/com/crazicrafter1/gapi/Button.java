@@ -164,6 +164,13 @@ public class Button {
             return this;
         }
 
+        /**
+         * Attach an {@link AbstractMenu.Builder} to this button to open on
+         * the specified {@link EnumPress}
+         * @param menuToOpen the menu to open
+         * @param press which press
+         * @return this
+         */
         public Builder bind(AbstractMenu.Builder menuToOpen,
                             EnumPress press) {
 
@@ -172,6 +179,29 @@ public class Button {
             return this.append(press, (interact) -> EnumResult.OPEN(menuToOpen));
         }
 
+        /**
+         * Bind a menu to LMB, and assign parent menu
+         * @param parentBuilder the parent menu
+         * @param menuToOpen the menu to open
+         * @return this
+         */
+        public Builder child(AbstractMenu.Builder parentBuilder, AbstractMenu.Builder menuToOpen) {
+            menuToOpen.parent(parentBuilder);
+            return bind(menuToOpen, EnumPress.LMB);
+        }
+
+        public Builder child(AbstractMenu.Builder parentBuilder, AbstractMenu.Builder menuToOpen, Function<Button.Interact, Object> rightClickListener) {
+            menuToOpen.parent(parentBuilder);
+            append(EnumPress.RMB, rightClickListener);
+            return bind(menuToOpen, EnumPress.LMB);
+        }
+
+        /**
+         * Combine button presses to listeners
+         * @param press
+         * @param func
+         * @return
+         */
         public Builder append(EnumPress press, Function<Interact, Object> func) {
 
             if (press != null)

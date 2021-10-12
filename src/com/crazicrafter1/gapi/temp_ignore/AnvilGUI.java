@@ -1,5 +1,6 @@
-package com.crazicrafter1.gapi.anvil;
+package com.crazicrafter1.gapi.temp_ignore;
 
+import net.wesjd.anvilgui.version.VersionWrapper;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

@@ -1,5 +1,10 @@
 package com.crazicrafter1.gapi;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+
 public class MainTest {
 
     public static class A {
@@ -27,8 +32,28 @@ public class MainTest {
     public static void main(String[] args) {
         //new B().bar();
 
-        int i = 4;
-        print(i++);
+        File myJar = new File("anvilgui-1_8_R3.jar");
+
+        try {
+            URLClassLoader child = new URLClassLoader(
+                    new URL[]{myJar.toURI().toURL()},
+                    ClassLoader.getSystemClassLoader()
+            );
+            Class<?> classToLoad = Class.forName("net.wesjd.anvilgui.version.Wrapper1_8_R3", true, child);
+            //Method method = classToLoad.getDeclaredMethod("myMethod");
+            //Object instance = classToLoad.newInstance();
+            //Object result = method.invoke(instance);
+
+            for (var method : classToLoad.getMethods()) {
+                System.out.println("Found method: " + method.getName());
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //int i = 4;
+        //print(i++);
     }
 
 }

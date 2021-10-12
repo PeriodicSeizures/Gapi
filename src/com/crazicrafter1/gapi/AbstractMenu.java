@@ -2,7 +2,6 @@ package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -16,7 +15,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,31 +29,33 @@ public abstract class AbstractMenu {
     final HashMap<Integer, Button> buttons;
     boolean preventClose;
     final Function<Player, EnumResult> closeFunction;
-    private final AbstractMenu.Builder parentMenuBuilder;
-    //private final AbstractMenu.Builder originalBuilder;
-    //private int depth;
-    //Consumer<Integer> refreshFunction;
+    private final AbstractMenu.Builder parentBuilder;
+    final AbstractMenu.Builder thisBuilder;
 
     Inventory inventory;
 
+    Status status;
 
-
-
+    enum Status {
+        OPEN,
+        REROUTING,
+        CLOSED,
+    }
 
 
     /**
      * Needed to prevent infinite recursion
      * Impl will access too
      */
-    boolean open;
+    //boolean open;
 
     AbstractMenu(Player player,
                  String inventoryTitle,
                  HashMap<Integer, Button> buttons,
                  boolean preventClose,
                  Function<Player, EnumResult> closeFunction,
-                 AbstractMenu.Builder parentMenuBuilder
-                 //AbstractMenu.Builder originalBuilder,
+                 Builder parentBuilder,
+                 Builder thisBuilder
                  //int depth,
                  //Consumer<Integer> refreshFunction
     ) {
@@ -67,16 +67,11 @@ public abstract class AbstractMenu {
         this.buttons = buttons;
         this.preventClose = preventClose;
         this.closeFunction = closeFunction;
-        this.parentMenuBuilder = parentMenuBuilder;
-        //this.originalBuilder = originalBuilder;
-        //this.depth = depth;
-        //this.refreshFunction = refreshFunction;
-
-
-        //this.depth = parentMenuBuilder.
+        this.parentBuilder = parentBuilder;
+        this.thisBuilder = thisBuilder;
     }
 
-    void openInventory() {
+    void openInventory(boolean sendOpenPacket) {
         // super impl should create inventory
         // then calls this supermethod
 
@@ -85,14 +80,14 @@ public abstract class AbstractMenu {
 
         for (Map.Entry<Integer,Button> entry : buttons.entrySet()) {
             ItemStack itemStack = entry.getValue().getItemStackFunction.get();
-            Main.getInstance().debug(entry.getKey() + " " +
-                    itemStack.getType() + " " + itemStack.getItemMeta().getDisplayName());
+            //Main.getInstance().debug(entry.getKey() + " " +
+            //        itemStack.getType() + " " + itemStack.getItemMeta().getDisplayName());
             inventory.setItem(entry.getKey(), itemStack);
         }
 
         //player.openInventory(inventory);
         openMenus.put(player.getUniqueId(), this);
-        open = true;
+        this.status = Status.OPEN;
         Main.getInstance().debug("Putting AbstractMenu into HashMap");
     }
 
@@ -107,11 +102,12 @@ public abstract class AbstractMenu {
      *  but still called via super
      */
     void closeInventory(boolean sendClosePacket) {
-        if (!open) {
+        if (status != Status.OPEN) {
             return;
         }
 
-        open = false;
+        status = Status.CLOSED;
+        //open = false;
 
         /*
          * Underlying nms implementation
@@ -145,7 +141,8 @@ public abstract class AbstractMenu {
 
         Button.Interact interact =
                 new Button.Interact(player,
-                        event.getCursor(),
+                        event.getCursor().getType() != Material.AIR ?
+                                event.getCursor() : null,
                         event.getCurrentItem(),
                         event.isShiftClick(),
                         event.getClick() == ClickType.NUMBER_KEY ? event.getSlot() : -1);
@@ -164,24 +161,29 @@ public abstract class AbstractMenu {
 
     void invokeResult(InventoryClickEvent event, Object o) {
         if (o instanceof AbstractMenu.Builder builder) {
-            Main.getInstance().debug("Result: OPEN");
-            //Main.getInstance().debug("Builder: ");
             builder.open(player);
         } else if (o instanceof EnumResult result) {
             Main.getInstance().debug("Result: " + result.name());
+
             switch (result) {
                 case GRAB_ITEM -> event.setCancelled(false);
-                case CLOSE -> closeInventory(true);
+                case CLOSE -> {
+                    //route = EnumRoute.CLOSED;
+                    closeInventory(true);
+                }
                 case BACK -> new BukkitRunnable() {
                     @Override
                     public void run() {
-                        parentMenuBuilder.open(player);
+                        status = Status.REROUTING;
+                        parentBuilder.open(player);//.invokeResult(null, EnumResult.REFRESH);
+                        //parentMenuBuilderopenInventory(false);
                     }
                 }.runTaskLater(Main.getInstance(), 0);
                 case REFRESH -> new BukkitRunnable() {
                     @Override
                     public void run() {
-                        openInventory(); //originalBuilder.open(player); //openInventory();
+                        inventory.clear();
+                        openInventory(false); //originalBuilder.open(player); //openInventory();
                     }
                 }.runTaskLater(Main.getInstance(), 0);
                 case OK -> {
@@ -215,7 +217,8 @@ public abstract class AbstractMenu {
      *  - InventoryCloseEvent ->
      */
     void onInventoryClose(InventoryCloseEvent event) {
-        if (open) {
+
+        if (status != Status.REROUTING) {
             // fire closeFunction lambda
             closeInventory(false);
 
@@ -224,7 +227,7 @@ public abstract class AbstractMenu {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        openInventory();
+                        openInventory(true);
                     }
                 }.runTaskLater(Main.getInstance(), 0);
             } else {
@@ -258,7 +261,7 @@ public abstract class AbstractMenu {
         final HashMap<Integer, Button.Builder> buttons = new HashMap<>();
         boolean preventClose;
         Function<Player, EnumResult> closeFunction;
-        AbstractMenu.Builder parentMenuBuilder;
+        public AbstractMenu.Builder parentMenuBuilder;
 
         //Consumer<Integer> func;
 
@@ -270,7 +273,7 @@ public abstract class AbstractMenu {
 
 
         public Builder title(String title) {
-            Validate.notNull(title, "title cannot be null");
+            Validate.notNull(title, "title cannot be set to null");
             this.title = title;
             return this;
         }
@@ -287,7 +290,7 @@ public abstract class AbstractMenu {
         }
 
         public Builder validate() {
-            Validate.notNull(title);
+            Validate.notNull(title, "must assign a title");
             return this;
         }
 
@@ -296,7 +299,7 @@ public abstract class AbstractMenu {
          * @param builder parent builder
          * @return this
          */
-        final Builder parent(Builder builder) {
+        public final Builder parent(Builder builder) {
             Validate.notNull(builder);
             //this.depth = builder.depth + 1;
             parentMenuBuilder = builder;
@@ -336,6 +339,8 @@ public abstract class AbstractMenu {
          * This method return type should be overridden to return sub Builder
          */
         public abstract AbstractMenu open(Player player);
+
+
 
     }
 }

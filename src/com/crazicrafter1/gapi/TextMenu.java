@@ -1,9 +1,8 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
-import com.crazicrafter1.gapi.anvil.AnvilGUI;
-import com.crazicrafter1.gapi.anvil.VersionWrapper;
-import com.crazicrafter1.gapi.anvil.Wrapper1_17_1_R1;
+import net.wesjd.anvilgui.version.VersionMatcher;
+import net.wesjd.anvilgui.version.VersionWrapper;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -31,25 +30,26 @@ public class TextMenu extends AbstractMenu {
 
     }
 
-    private static final VersionWrapper WRAPPER = new Wrapper1_17_1_R1(); //new VersionMatcher().match();
+    private static final VersionWrapper WRAPPER = new VersionMatcher().match(); //new Wrapper1_17_1_R1(); //new VersionMatcher().match();
 
     private final BiFunction<Player, String, EnumResult> completeFunction;
 
     private int containerId;
 
     private TextMenu(Player player,
-                    String inventoryTitle,
-                    HashMap<Integer, Button> buttons,
-                    boolean preventClose,
-                    Function<Player, EnumResult> closeFunction,
-                    Builder parentMenuBuilder,
-                    BiFunction<Player, String, EnumResult> completeFunction) {
-        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentMenuBuilder);
+                     String inventoryTitle,
+                     HashMap<Integer, Button> buttons,
+                     boolean preventClose,
+                     Function<Player, EnumResult> closeFunction,
+                     Builder parentBuilder,
+                     Builder thisBuilder,
+                     BiFunction<Player, String, EnumResult> completeFunction) {
+        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentBuilder, thisBuilder);
         this.completeFunction = completeFunction;
     }
 
     @Override
-    void openInventory() {
+    void openInventory(boolean sendOpenPacket) {
         WRAPPER.handleInventoryCloseEvent(player);
         WRAPPER.setActiveContainerDefault(player);
 
@@ -64,21 +64,24 @@ public class TextMenu extends AbstractMenu {
 
         containerId = WRAPPER.getNextContainerId(player, container);
 
-        WRAPPER.sendPacketOpenWindow(player, containerId, inventoryTitle);
+        //if (sendOpenPacket)
+            WRAPPER.sendPacketOpenWindow(player, containerId, inventoryTitle);
         WRAPPER.setActiveContainer(player, container);
         WRAPPER.setActiveContainerId(container, containerId);
         WRAPPER.addActiveContainerSlotListener(container, player);
 
         inventory = WRAPPER.toBukkitInventory(container);
 
-        super.openInventory();
+        super.openInventory(sendOpenPacket);
 
     }
 
     @Override
     void closeInventory(boolean sendClosePacket) {
-        if (!open)
+        if (status != Status.OPEN)
             return;
+        //if (!open)
+            //return;
 
         if (sendClosePacket) {
             WRAPPER.handleInventoryCloseEvent(player);
@@ -91,22 +94,21 @@ public class TextMenu extends AbstractMenu {
 
     @Override
     void onInventoryClick(InventoryClickEvent event) {
-        if (event.getClickedInventory().equals(inventory)) {
-            event.setCancelled(true);
+        event.setCancelled(true);
 
-            final ItemStack clicked = inventory.getItem(AnvilGUI.Slot.OUTPUT);
-            if (clicked == null || clicked.getType() == Material.AIR) return;
+        final ItemStack clicked = inventory.getItem(Slot.SLOT_OUTPUT);
+        if (clicked == null || clicked.getType() == Material.AIR) return;
 
-            Object o;
+        Object o;
 
-            if (event.getSlot() == Slot.SLOT_OUTPUT) {
-                o = completeFunction.apply(player,
-                        clicked.hasItemMeta() ? clicked.getItemMeta().getDisplayName() : "");
-            } else {
-                o = invokeButtonAt(event);
-            }
-            invokeResult(event, o);
+        if (event.getSlot() == Slot.SLOT_OUTPUT) {
+            o = completeFunction.apply(player,
+                    clicked.hasItemMeta() ? clicked.getItemMeta().getDisplayName() : "");
+        } else {
+            o = invokeButtonAt(event);
         }
+        invokeResult(event, o);
+
     }
 
     public static class TBuilder extends Builder {
@@ -137,6 +139,14 @@ public class TextMenu extends AbstractMenu {
             return (TBuilder) super.button(Slot.SLOT_LEFT, button);
         }
 
+        public TBuilder rightInput(Button.Builder button) {
+            return (TBuilder) super.button(Slot.SLOT_RIGHT, button);
+        }
+
+        //public TBuilder right(String name, String lore) {
+        //    return super.button(Slot.SLOT_RIGHT)
+        //}
+
         public TBuilder onComplete(BiFunction<Player, String, EnumResult> completeFunction) {
             this.completeFunction = completeFunction;
 
@@ -144,10 +154,10 @@ public class TextMenu extends AbstractMenu {
         }
 
         /**
-         * Sets the inital item-text that is displayed to the user
+         * Sets the initial item-text that is displayed to the user
          *
          * @param text The initial name of the item in the anvil
-         * @return The {@link AnvilGUI.Builder} instance
+         * @return The {@link TextMenu.TBuilder} instance
          * @throws IllegalArgumentException if the text is null
          */
         public TBuilder text(String text) {
@@ -158,7 +168,7 @@ public class TextMenu extends AbstractMenu {
 
         @Override
         public Builder validate() {
-            Validate.notNull(completeFunction, "Complete function cannot be null");
+            Validate.notNull(completeFunction, "must assign an on complete function");
 
             // analyze SLOT 0 first item
             // must be not null and non-air material
@@ -195,9 +205,10 @@ public class TextMenu extends AbstractMenu {
                                              preventClose,
                                              closeFunction,
                                              parentMenuBuilder,
+                                             this,
                                              completeFunction);
 
-            textMenu.openInventory();
+            textMenu.openInventory(true);
 
             return textMenu;
         }

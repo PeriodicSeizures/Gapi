@@ -4,7 +4,6 @@ import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.gapi.Button;
 import com.crazicrafter1.gapi.Main;
 import com.crazicrafter1.gapi.SimpleMenu;
-import com.crazicrafter1.gapi.anvil.AnvilGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+
 public class CmdTestMenu implements CommandExecutor {
 
     public CmdTestMenu(JavaPlugin plugin) {
@@ -98,7 +100,8 @@ public class CmdTestMenu implements CommandExecutor {
             } case "parallax": {
                 new ParallaxMenu.PBuilder()
                         .title(ChatColor.DARK_GRAY + "Test Parallax Menu")
-                        .action(self -> {
+                        .action((menu) -> {
+                            ArrayList<Button> result = new ArrayList<>();
                             Material values[] = Material.values();
                             for (int i = 0; i < 59; i++) {
                                 Material material = values[Util.randomRange(0, values.length - 1)];
@@ -106,7 +109,7 @@ public class CmdTestMenu implements CommandExecutor {
                                     material = values[Util.randomRange(0, values.length - 1)];
                                 }
                                 Material finalMaterial = material;
-                                self.append(new Button.Builder()
+                                result.add(new Button.Builder()
                                         .icon(() -> new ItemBuilder(finalMaterial).toItem())
                                         .lmb(interact -> {
                                             interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
@@ -114,9 +117,10 @@ public class CmdTestMenu implements CommandExecutor {
 
                                             // do nothing else on click
                                             return EnumResult.OK;
-                                        })
+                                        }).get()
                                 );
                             }
+                            return result;
                         })
                         .open(p);
 
