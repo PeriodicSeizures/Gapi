@@ -34,7 +34,7 @@ public class ParallaxMenu extends SimpleMenu {
     private ParallaxMenu(Player player,
                          String inventoryTitle,
                          HashMap<Integer, Button> buttons,
-                         boolean preventClose,
+                         //boolean preventClose,
                          Function<Player, EnumResult> closeFunction,
                          Builder parentBuilder,
                          Builder thisBuilder,
@@ -42,7 +42,7 @@ public class ParallaxMenu extends SimpleMenu {
                          //ArrayList<Button> orderedButtons
                          Function<Builder, ArrayList<Button>> orderedButtonsFunc
     ) {
-        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentBuilder, thisBuilder, background, 6);
+        super(player, inventoryTitle, buttons/*, preventClose*/, closeFunction, parentBuilder, thisBuilder, background, 6);
         //this.orderedButtons = orderedButtons;
         this.orderedButtonsFunc = orderedButtonsFunc;
     }
@@ -137,6 +137,7 @@ public class ParallaxMenu extends SimpleMenu {
         }
 
         public PBuilder action(Function<Builder, ArrayList<Button>> orderedButtonsFunc) {
+            Validate.notNull(orderedButtonsFunc);
             this.orderedButtonsFunc = orderedButtonsFunc;
 
             return this;
@@ -164,10 +165,10 @@ public class ParallaxMenu extends SimpleMenu {
             return (PBuilder) super.button(x, y, button);
         }
 
-        @Override
-        public PBuilder preventClose() {
-            return (PBuilder) super.preventClose();
-        }
+        //@Override
+        //public PBuilder preventClose() {
+        //    return (PBuilder) super.preventClose();
+        //}
 
         @Override
         public PBuilder onClose(Function<Player, EnumResult> closeFunction) {
@@ -201,6 +202,24 @@ public class ParallaxMenu extends SimpleMenu {
             return (PBuilder) super.bind(x, y, press, getItemStackFunction, menuToOpen);
         }
 
+        //@Override
+        //protected SBuilder clone() {
+        //    PBuilder builder = new PBuilder();
+        //    builder.title = title;
+        //    builder.buttons = (HashMap<Integer, Button.Builder>) buttons.clone();
+        //    builder.closeFunction = closeFunction;
+        //    builder.parentMenuBuilder = parentMenuBuilder;
+        //    builder.background = background; //.clone();
+        //    builder.orderedButtonsFunc = orderedButtonsFunc;
+        //    return builder;
+        //}
+
+        @Override
+        void validate() {
+            Validate.notNull(orderedButtonsFunc);
+            super.validate();
+        }
+
         @Override
         public ParallaxMenu open(Player player) {
             Validate.notNull(player, "Player cannot be null");
@@ -211,7 +230,7 @@ public class ParallaxMenu extends SimpleMenu {
             ParallaxMenu menu = new ParallaxMenu(player,
                                                  title,
                                                  btns,
-                                                 preventClose,
+                                                 //preventClose,
                                                  closeFunction,
                                                  parentMenuBuilder,
                                                  this,

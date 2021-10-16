@@ -19,13 +19,13 @@ public class SimpleMenu extends AbstractMenu {
     SimpleMenu(Player player,
                String inventoryTitle,
                HashMap<Integer, Button> buttons,
-               boolean preventClose,
+               //boolean preventClose,
                Function<Player, EnumResult> closeFunction,
                Builder parentBuilder,
                Builder thisBuilder,
                ItemStack background,
                int columns) {
-        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentBuilder, thisBuilder);
+        super(player, inventoryTitle, buttons /*,preventClose*/, closeFunction, parentBuilder, thisBuilder);
         this.background = background;
         this.columns = columns;
     }
@@ -73,7 +73,7 @@ public class SimpleMenu extends AbstractMenu {
         private final int columns;
 
         public SBuilder(int columns) {
-            Validate.isTrue(columns >= 1, "columns must be greater or equal to 0 (" + columns + ")");
+            Validate.isTrue(columns >= 1, "columns must be greater or equal to 1 (" + columns + ")");
             Validate.isTrue(columns <= 6, "columns must be less or equal to 6 (" + columns + ")");
             this.columns = columns;
         }
@@ -83,10 +83,10 @@ public class SimpleMenu extends AbstractMenu {
             return (SBuilder) super.title(title);
         }
 
-        @Override
-        public SBuilder preventClose() {
-            return (SBuilder) super.preventClose();
-        }
+        //@Override
+        //public SBuilder preventClose() {
+        //    return (SBuilder) super.preventClose();
+        //}
 
         @Override
         public SBuilder onClose(Function<Player, EnumResult> closeFunction) {
@@ -195,6 +195,17 @@ public class SimpleMenu extends AbstractMenu {
             return super.getOrMakeButton(y*9 + x, getItemStackFunction);
         }
 
+        //@Override
+        //protected SBuilder clone() {
+        //    SBuilder builder = new SBuilder(columns);
+        //    builder.title = title;
+        //    builder.buttons = (HashMap<Integer, Button.Builder>) buttons.clone();
+        //    builder.closeFunction = closeFunction;
+        //    builder.parentMenuBuilder = parentMenuBuilder;
+        //    builder.background = background; //.clone();
+        //    return builder;
+        //}
+
         public SimpleMenu open(Player player) {
             Validate.notNull(player, "Player cannot be null");
 
@@ -204,7 +215,7 @@ public class SimpleMenu extends AbstractMenu {
             SimpleMenu menu = new SimpleMenu(player,
                                              title,
                                              btns,
-                                             preventClose,
+                                             //preventClose,
                                              closeFunction,
                                              parentMenuBuilder,
                                              this,

@@ -126,11 +126,11 @@ public class Button {
 
     public static class Builder {
         //private ItemStack itemStack;
-        private Supplier<ItemStack> getItemStackFunction;
-        private Function<Interact, Object> leftClickFunction;
-        private Function<Interact, Object> middleClickFunction;
-        private Function<Interact, Object> rightClickFunction;
-        private Function<Interact, Object> numberKeyFunction;
+        Supplier<ItemStack> getItemStackFunction;
+        Function<Interact, Object> leftClickFunction;
+        Function<Interact, Object> middleClickFunction;
+        Function<Interact, Object> rightClickFunction;
+        Function<Interact, Object> numberKeyFunction;
 
         //public Builder icon(ItemStack itemStack) {
         //    this.itemStack = itemStack;

@@ -1,12 +1,11 @@
 package com.crazicrafter1.gapi;
 
-import com.crazicrafter1.crutils.ReflectionUtil;
-import com.crazicrafter1.crutils.Updater;
+import com.crazicrafter1.crutils.Util;
 import com.crazicrafter1.gapi.test.CmdTestMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Main extends JavaPlugin {
 
@@ -18,19 +17,32 @@ public class Main extends JavaPlugin {
         return instance;
     }
 
-    public boolean debug;
-    public boolean update;
+    public static boolean debug;
+    public static boolean update;
 
     @Override
     public void onEnable() {
+
+        GithubUpdater.autoUpdate(this, "PeriodicSeizures", "Gapi", "Gapi.jar");
+
+        if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
+            //GithubInstaller.installDepend(this,
+            //        "PeriodicSeizures",
+            //        "CRUtils",
+            //        "CRUtils.jar",
+            //        "CRUtils");
+            //return;
+            error(ChatColor.RED + "Required plugin CRUtils not found");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         instance = this;
 
         this.saveDefaultConfig();
 
-        this.debug = getConfig().getBoolean("debug");
-        this.update = getConfig().getBoolean("update");
-
-        new Updater(this, "PeriodicSeizures", "Gapi", update);
+        debug = getConfig().getBoolean("debug");
+        update = getConfig().getBoolean("update");
 
         new EventListener(this);
         new CmdTestMenu(this);

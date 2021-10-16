@@ -5,9 +5,14 @@ public enum EnumResult {
     CLOSE,
     BACK,
     REFRESH,
+    //TEXT, // TextMenu only
     OK;
 
     public static Object OPEN(AbstractMenu.Builder builder) {
         return builder;
+    }
+
+    public static Object TEXT(String text) {
+        return text;
     }
 }

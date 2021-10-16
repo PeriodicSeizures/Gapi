@@ -41,7 +41,7 @@ public class CmdTestMenu implements CommandExecutor {
                         .title("Simple Menu")
                         .background()
                         .button(4, 1, new Button.Builder()
-                                        .icon(() -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem()))
+                                        .icon(() -> new ItemBuilder(Material.FEATHER).name("&eHello, World!").toItem()))
                         .open(p);
 
                 break;
@@ -68,13 +68,12 @@ public class CmdTestMenu implements CommandExecutor {
                         .open(p);
                 break;
             } case "text": {
-
                 new SimpleMenu.SBuilder(3)
                         .title("parent")
                         .childButton(4, 1, () -> new ItemStack(Material.ANVIL),
                                 new TextMenu.TBuilder()
                                         .title("Text menu")
-                                        .text("Default text!")
+                                        .left(() -> "Default text!")
                                         //.preventClose()
                                         .onClose(player -> EnumResult.BACK)
                                         .onComplete((player, s) -> {
@@ -89,7 +88,7 @@ public class CmdTestMenu implements CommandExecutor {
             }
 
 
-            case "locked": {
+            /*case "locked": {
                 new SimpleMenu.SBuilder(1)
                         .title("Test Lockable Menu")
                         .preventClose()
@@ -99,7 +98,7 @@ public class CmdTestMenu implements CommandExecutor {
                                         .lmb(interact -> EnumResult.CLOSE))
                         .open(p);
                 break;
-            } case "parallax": {
+            } */case "parallax": {
                 new ParallaxMenu.PBuilder()
                         .title(ChatColor.DARK_GRAY + "Test Parallax Menu")
                         .action((menu) -> {
@@ -126,16 +125,6 @@ public class CmdTestMenu implements CommandExecutor {
                         })
                         .open(p);
 
-                break;
-            } case "text1": {
-                new TextMenu.TBuilder()
-                        .title("Text menu")
-                        .text("Default text!")
-                        .onComplete((player, s) -> {
-                            p.sendMessage("You typed " + s);
-                            return EnumResult.OK;
-                        })
-                        .open(p);
                 break;
             }
             default:

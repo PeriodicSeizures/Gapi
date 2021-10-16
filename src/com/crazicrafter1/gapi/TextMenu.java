@@ -1,6 +1,7 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
+import com.sun.istack.internal.Nullable;
 import net.wesjd.anvilgui.version.VersionMatcher;
 import net.wesjd.anvilgui.version.VersionWrapper;
 import org.apache.commons.lang.Validate;
@@ -8,10 +9,12 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 
 import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class TextMenu extends AbstractMenu {
 
@@ -32,20 +35,18 @@ public class TextMenu extends AbstractMenu {
 
     private static final VersionWrapper WRAPPER = new VersionMatcher().match(); //new Wrapper1_17_1_R1(); //new VersionMatcher().match();
 
-    private final BiFunction<Player, String, EnumResult> completeFunction;
-
     private int containerId;
 
     private TextMenu(Player player,
                      String inventoryTitle,
                      HashMap<Integer, Button> buttons,
-                     boolean preventClose,
+                     //boolean preventClose,
                      Function<Player, EnumResult> closeFunction,
                      Builder parentBuilder,
-                     Builder thisBuilder,
-                     BiFunction<Player, String, EnumResult> completeFunction) {
-        super(player, inventoryTitle, buttons, preventClose, closeFunction, parentBuilder, thisBuilder);
-        this.completeFunction = completeFunction;
+                     Builder thisBuilder
+
+    ) {
+        super(player, inventoryTitle, buttons/*, preventClose*/, closeFunction, parentBuilder, thisBuilder);
     }
 
     @Override
@@ -99,21 +100,14 @@ public class TextMenu extends AbstractMenu {
         final ItemStack clicked = inventory.getItem(Slot.SLOT_OUTPUT);
         if (clicked == null || clicked.getType() == Material.AIR) return;
 
-        Object o;
-
-        if (event.getSlot() == Slot.SLOT_OUTPUT) {
-            o = completeFunction.apply(player,
-                    clicked.hasItemMeta() ? clicked.getItemMeta().getDisplayName() : "");
-        } else {
-            o = invokeButtonAt(event);
-        }
+        Object o = invokeButtonAt(event);
         invokeResult(event, o);
-
     }
 
     public static class TBuilder extends Builder {
-        private BiFunction<Player, String, EnumResult> completeFunction;
-        private String itemText;
+        //private BiFunction<Player, String, EnumResult> completeFunction;
+        //private Supplier<String> itemTextFunction;
+        //private Supplier<String> itemLoreFunction;
 
         @Override
         public TBuilder title(String title) {
@@ -125,69 +119,113 @@ public class TextMenu extends AbstractMenu {
         //    return (TBuilder) super.button(slot, button);
         //}
 
-        @Override
-        public TBuilder preventClose() {
-            return (TBuilder) super.preventClose();
-        }
+        //@Override
+        //public TBuilder preventClose() {
+        //    return (TBuilder) super.preventClose();
+        //}
 
         @Override
         public TBuilder onClose(Function<Player, EnumResult> closeFunction) {
             return (TBuilder) super.onClose(closeFunction);
         }
 
-        public TBuilder leftInput(Button.Builder button) {
-            return (TBuilder) super.button(Slot.SLOT_LEFT, button);
-        }
+        ///**
+        // * These behaviours make little sense when also using text/lore java functional @interfaces
+        // * too confusing
+        // * @param button
+        // * @return
+        // */
+        //public TBuilder leftInput(Button.Builder button) {
+        //    return (TBuilder) super.button(Slot.SLOT_LEFT, button);
+        //}
 
-        public TBuilder rightInput(Button.Builder button) {
-            return (TBuilder) super.button(Slot.SLOT_RIGHT, button);
-        }
+        //public TBuilder rightInput(Button.Builder button) {
+        //    return (TBuilder) super.button(Slot.SLOT_RIGHT, button);
+        //}
 
         //public TBuilder right(String name, String lore) {
         //    return super.button(Slot.SLOT_RIGHT)
         //}
 
-        public TBuilder onComplete(BiFunction<Player, String, EnumResult> completeFunction) {
-            this.completeFunction = completeFunction;
+        public TBuilder onComplete(BiFunction<Player, String, Object> completeFunction) {
+            return (TBuilder) this.button(Slot.SLOT_OUTPUT, new Button.Builder()
+                    .lmb(interact -> completeFunction.apply(interact.player,
+                            interact.clickedItem.hasItemMeta() ? interact.clickedItem.getItemMeta().getDisplayName() : ""))
+            );
+            //this.completeFunction = completeFunction;
 
-            return this;
+            //return this;
         }
 
         /**
-         * Sets the initial item-text that is displayed to the user
+         * Sets the left item. Will not translate color codes
          *
-         * @param text The initial name of the item in the anvil
+         * @param itemTextFunction The supplier text of the item
          * @return The {@link TextMenu.TBuilder} instance
          * @throws IllegalArgumentException if the text is null
          */
-        public TBuilder text(String text) {
-            Validate.notNull(text, "Text cannot be null");
-            this.itemText = text;
-            return this;
+        public TBuilder left(Supplier<String> itemTextFunction) {
+            return this.left(itemTextFunction, null);
+        }
+
+        /**
+         * Sets the left item. Will translate color codes
+         * @param itemTextFunction The supplier text of the item
+         * @return The {@link TextMenu.TBuilder} instance
+         * @throws IllegalArgumentException if the text is null
+         */
+        public TBuilder leftF(Supplier<String> itemTextFunction) {
+            return this.leftF(itemTextFunction, null);
+        }
+
+        public TBuilder left(Supplier<String> itemTextFunction, @Nullable Supplier<String> itemLoreFunction) {
+            Validate.notNull(itemTextFunction, "Left text function cannot be null");
+            //this.itemTextFunction = itemTextFunction;
+            return (TBuilder) this.button(Slot.SLOT_LEFT, new Button.Builder()
+                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
+                            .name(itemTextFunction.get(), false)
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, false).toItem()));
+        }
+
+        public TBuilder leftF(Supplier<String> itemTextFunction, @Nullable Supplier<String> itemLoreFunction) {
+            Validate.notNull(itemTextFunction, "Left text function cannot be null");
+            //this.itemTextFunction = itemTextFunction;
+            return (TBuilder) this.button(Slot.SLOT_LEFT, new Button.Builder()
+                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
+                            .name(itemTextFunction.get(), true)
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, true).toItem()));
+        }
+
+        public TBuilder right(Supplier<String> itemNameFunction) {
+            return this.right(itemNameFunction, null);
+        }
+
+        public TBuilder rightF(Supplier<String> itemNameFunction) {
+            return this.rightF(itemNameFunction, null);
+        }
+
+        public TBuilder right(Supplier<String> itemNameFunction, @Nullable Supplier<String> itemLoreFunction) {
+            Validate.notNull(itemNameFunction, "Right text function cannot be null");
+            return (TBuilder) super.button(Slot.SLOT_RIGHT, new Button.Builder()
+                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
+                            .name(itemNameFunction.get(), false)
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, false).toItem()));
+        }
+
+        public TBuilder rightF(Supplier<String> itemNameFunction, @Nullable Supplier<String> itemLoreFunction) {
+            Validate.notNull(itemNameFunction, "Right text function cannot be null");
+            return (TBuilder) super.button(Slot.SLOT_RIGHT, new Button.Builder()
+                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
+                            .name(itemNameFunction.get(), true)
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, true).toItem()));
         }
 
         @Override
-        public Builder validate() {
-            Validate.notNull(completeFunction, "must assign an on complete function");
+        void validate() {
+            Validate.notNull(buttons.get(Slot.SLOT_LEFT), "Must assign left item");
+            Validate.notNull(buttons.get(Slot.SLOT_OUTPUT), "Must assign complete function");
 
-            // analyze SLOT 0 first item
-            // must be not null and non-air material
-            Button.Builder LEFT = buttons.get(Slot.SLOT_LEFT);
-            if (LEFT == null) {
-                LEFT = new Button.Builder().icon(() -> new ItemStack(Material.NAME_TAG));
-            } else if (LEFT.get().getItemStackFunction == null) {
-                LEFT.icon(() -> new ItemBuilder(Material.PAPER).toItem());
-            }
-
-            if (itemText != null) {
-                // apply text to item
-                ItemStack itemStack = LEFT.get().getItemStackFunction.get();
-                LEFT.icon(() -> new ItemBuilder(itemStack).name(itemText).toItem());
-            }
-
-            buttons.put(Slot.SLOT_LEFT, LEFT);
-
-            return super.validate();
+            super.validate();
         }
 
         @Override
@@ -202,11 +240,10 @@ public class TextMenu extends AbstractMenu {
             TextMenu textMenu = new TextMenu(player,
                                              title,
                                              btns,
-                                             preventClose,
+                                             //preventClose,
                                              closeFunction,
                                              parentMenuBuilder,
-                                             this,
-                                             completeFunction);
+                                             this);
 
             textMenu.openInventory(true);
 

@@ -32,25 +32,36 @@ public class MainTest {
     public static void main(String[] args) {
         //new B().bar();
 
-        File myJar = new File("anvilgui-1_8_R3.jar");
 
-        try {
-            URLClassLoader child = new URLClassLoader(
-                    new URL[]{myJar.toURI().toURL()},
-                    ClassLoader.getSystemClassLoader()
-            );
-            Class<?> classToLoad = Class.forName("net.wesjd.anvilgui.version.Wrapper1_8_R3", true, child);
-            //Method method = classToLoad.getDeclaredMethod("myMethod");
-            //Object instance = classToLoad.newInstance();
-            //Object result = method.invoke(instance);
 
-            //for (var method : classToLoad.getMethods()) {
-            //    System.out.println("Found method: " + method.getName());
-            //}
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+
+
+
+
+
+
+
+        //File myJar = new File("anvilgui-1_8_R3.jar");
+
+        //try {
+        //    URLClassLoader child = new URLClassLoader(
+        //            new URL[]{myJar.toURI().toURL()},
+        //            ClassLoader.getSystemClassLoader()
+        //    );
+        //    Class<?> classToLoad = Class.forName("net.wesjd.anvilgui.version.Wrapper1_8_R3", true, child);
+        //    //Method method = classToLoad.getDeclaredMethod("myMethod");
+        //    //Object instance = classToLoad.newInstance();
+        //    //Object result = method.invoke(instance);
+
+        //    //for (var method : classToLoad.getMethods()) {
+        //    //    System.out.println("Found method: " + method.getName());
+        //    //}
+
+        //} catch (Exception e) {
+        //    e.printStackTrace();
+        //}
         //int i = 4;
         //print(i++);
     }
