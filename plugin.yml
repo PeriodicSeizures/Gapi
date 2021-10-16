@@ -1,6 +1,6 @@
 name: Gapi
 main: com.crazicrafter1.gapi.Main
-version: 1.0.0 # first version!
+version: 1.0.1 # first version!
 api-version: 1.13
 softdepend: [CRUtils]
 author: crazicrafter1
@@ -13,6 +13,10 @@ permissions:
   gapi.admin:
     description: Enable Gapi admin
     default: op
+
+# 1.0.1 (10/15/2021)
+# hotfixes
+
 
 # 1.0.0 (10/12/2021)
 # first version
