@@ -1,7 +1,6 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
-import com.crazicrafter1.crutils.Util;
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -45,12 +44,6 @@ public abstract class AbstractMenu {
         CLOSED,
     }
 
-    /**
-     * Needed to prevent infinite recursion
-     * Impl will access too
-     */
-    //boolean open;
-
     AbstractMenu(Player player,
                  String inventoryTitle,
                  HashMap<Integer, Button> buttons,
@@ -58,8 +51,6 @@ public abstract class AbstractMenu {
                  Function<Player, EnumResult> closeFunction,
                  Builder parentBuilder,
                  Builder thisBuilder
-                 //int depth,
-                 //Consumer<Integer> refreshFunction
     ) {
         Validate.notNull(inventoryTitle, "Inventory must be given a title");
 
@@ -88,15 +79,10 @@ public abstract class AbstractMenu {
     }
 
 
-    public final void closeInventory() {
+    final void closeInventory() {
         closeInventory(true);
     }
 
-    /**
-     * Forcibly close inventory
-     * Should be overridden for special behaviour
-     *  but still called via super
-     */
     void closeInventory(boolean sendClosePacket) {
         if (status != Status.OPEN) {
             return;
@@ -106,13 +92,8 @@ public abstract class AbstractMenu {
 
         /*
          * Underlying nms implementation
-         *      // same as AnvilGUI
          *      CraftEventFactory.handleInventoryCloseEvent(this);
-         *
-         *      // same as AnvilGUI
          *      this.b.sendPacket(new PacketPlayOutCloseWindow(this.bV.j));
-         *
-         *      // this does what...?
          *      this.o();
          */
         if (sendClosePacket)
@@ -122,12 +103,7 @@ public abstract class AbstractMenu {
             invokeResult(null, closeFunction.apply(player));
     }
 
-    /**
-     * Invoke the button corresponding to @{event}
-     * @param event
-     * @return an {@link Object} of instance {@link Object[]} or {@link EnumResult}
-     */
-    Object invokeButtonAt(InventoryClickEvent event) {
+    final Object invokeButtonAt(InventoryClickEvent event) {
         Button button = buttons.get(event.getSlot());
 
         if (button == null) {
@@ -155,19 +131,18 @@ public abstract class AbstractMenu {
     }
 
     void invokeResult(InventoryClickEvent event, Object o) {
+        Main.getInstance().debug("Click invocation result: " + o);
         if (o instanceof Builder)
             ((Builder)o).open(player);
         else if (o instanceof String) {
             if (!(this instanceof TextMenu)) {
                 throw new UnsupportedOperationException("EnumResult.TEXT is only usable with TextMenu");
             }
-            //buttons.get(TextMenu.Slot.SLOT_LEFT).
             inventory.setItem(TextMenu.Slot.SLOT_LEFT,
                     new ItemBuilder(Objects.requireNonNull(inventory.getItem(TextMenu.Slot.SLOT_LEFT))).name((String) o, false).toItem());
         }
         else if (o instanceof EnumResult) {
             EnumResult result = (EnumResult) o;
-            Main.getInstance().debug("Result: " + result.name());
 
             switch (result) {
                 case GRAB_ITEM: event.setCancelled(false); break;
@@ -176,8 +151,7 @@ public abstract class AbstractMenu {
                     @Override
                     public void run() {
                         status = Status.REROUTING;
-                        parentBuilder.open(player);//.invokeResult(null, EnumResult.REFRESH);
-                        //parentMenuBuilderopenInventory(false);
+                        parentBuilder.open(player);
                     }
                 }.runTaskLater(Main.getInstance(), 0);
                 break;
@@ -185,7 +159,7 @@ public abstract class AbstractMenu {
                     @Override
                     public void run() {
                         inventory.clear();
-                        openInventory(false); //originalBuilder.open(player); //openInventory();
+                        openInventory(false);
                     }
                 }.runTaskLater(Main.getInstance(), 0);
                 break;
@@ -201,7 +175,6 @@ public abstract class AbstractMenu {
     abstract void onInventoryClick(InventoryClickEvent event);
 
     void onInventoryDrag(InventoryDragEvent event) {
-        // inventory size should start at 0 and be continuous until ending slot
         for (int slot = 0; slot < inventory.getSize(); slot++) {
             if (event.getRawSlots().contains(slot)) {
                 event.setCancelled(true);
@@ -219,7 +192,6 @@ public abstract class AbstractMenu {
     void onInventoryClose(InventoryCloseEvent event) {
 
         if (status != Status.REROUTING) {
-            // fire closeFunction lambda
             closeInventory(false);
 
             //if (preventClose) {
@@ -231,10 +203,8 @@ public abstract class AbstractMenu {
             //        }
             //    }.runTaskLater(Main.getInstance(), 0);
             //} else {
-                Main.getInstance().debug("Removing AbstractMenu from HashMap");
                 openMenus.remove(player.getUniqueId());
-
-                // add impl to remove menu
+                Main.getInstance().debug("Removed AbstractMenu from HashMap");
             //}
         }
     }
@@ -253,7 +223,7 @@ public abstract class AbstractMenu {
      * construction that will require a refresh/construct method
      * to reload everything
      */
-    public static abstract class Builder /*implements Cloneable*/ {
+    public static abstract class Builder {
 
         final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
 
@@ -263,18 +233,16 @@ public abstract class AbstractMenu {
         Function<Player, EnumResult> closeFunction;
         public AbstractMenu.Builder parentMenuBuilder;
 
-        //Consumer<Integer> func;
-
-        // new AbstractMenu.Builder()
-        Supplier<Builder> makeMethod;
-
-        //TODO might be able to remove
-        //int depth = 0;
-
+        boolean recursiveTitle = false;
 
         public Builder title(String title) {
+            return this.title(title, this.recursiveTitle);
+        }
+
+        public Builder title(String title, boolean recursiveTitle) {
             Validate.notNull(title, "title cannot be set to null");
             this.title = title;
+            this.recursiveTitle = recursiveTitle;
             return this;
         }
 
@@ -289,10 +257,6 @@ public abstract class AbstractMenu {
             return this;
         }
 
-        void validate() {
-            Validate.notNull(title, "must assign a title");
-        }
-
         /**
          * Set the parent MenuBuilder of this MenuBuilder
          * @param builder parent builder
@@ -300,7 +264,6 @@ public abstract class AbstractMenu {
          */
         public final Builder parent(Builder builder) {
             Validate.notNull(builder);
-            //this.depth = builder.depth + 1;
             parentMenuBuilder = builder;
             return this;
         }
@@ -309,18 +272,6 @@ public abstract class AbstractMenu {
             buttons.put(slot, button);
             return this;
         }
-
-        //final Builder append(int slot, EnumPress press, ItemStack defItemStack, Function<Button.Interact, Object> func) {
-        //    Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(defItemStack));
-
-        //    if (button == null)
-        //        button = buttons.get(slot);
-
-        //    button.append(press, func);
-        //    return this;
-        //}
-
-        // reconstruction refresh function
 
         final Button.Builder getOrMakeButton(int slot, Supplier<ItemStack> getItemStackFunction) {
             Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(getItemStackFunction));
@@ -331,11 +282,36 @@ public abstract class AbstractMenu {
             return button;
         }
 
+        final String getTitle() {
+            return ChatColor.DARK_GRAY + (getRecursiveTitle()
+                    .replace("> ",
+                            ChatColor.GRAY + "> " + ChatColor.DARK_GRAY));
+        }
+
+        private static final int CUT_LENGTH = 29;
+
+        private String getRecursiveTitle() {
+            if (recursiveTitle && this.parentMenuBuilder != null) {
+                String path = parentMenuBuilder.getRecursiveTitle() +
+                        " > " + this.title;
+
+                if (path.length() > CUT_LENGTH) { // 30 normally
+                    return "..." + path.substring(path.length() - CUT_LENGTH);
+                }
+                return path;
+            } else {
+                return this.title;
+            }
+        }
+
+        void validate() {
+            Validate.notNull(title, "must assign a title");
+        }
+
         /**
-         * Transform this Builder into a graphical menu
-         * @param player target
-         * @return the built menu
-         * This method return type should be overridden to return sub Builder
+         * Constructs and opens the {@link AbstractMenu} to the player
+         * @param player player to open to
+         * @return the constructed menu
          */
         public abstract AbstractMenu open(Player player);
 

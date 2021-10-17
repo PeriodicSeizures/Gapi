@@ -13,6 +13,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class CmdTestMenu implements CommandExecutor {
 
@@ -32,103 +34,16 @@ public class CmdTestMenu implements CommandExecutor {
          * in a sub menu that this creates
          */
 
-        if (args.length == 0)
-            return false;
+        if (args.length == 0) {
+            p.sendMessage(ChatColor.RED + "" + Arrays.toString(EnumTest.values()));
+            return true;
+        }
 
-        switch (args[0].toLowerCase()) {
-            case "simple": {
-                new SimpleMenu.SBuilder(3)
-                        .title("Simple Menu")
-                        .background()
-                        .button(4, 1, new Button.Builder()
-                                        .icon(() -> new ItemBuilder(Material.FEATHER).name("&eHello, World!").toItem()))
-                        .open(p);
-
-                break;
-            } case "nested": {
-                new SimpleMenu.SBuilder(3)
-                        .title("Test Nested Menu")
-                        .background()
-                        .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
-                                new SimpleMenu.SBuilder(3)
-                                        .title("Child menu 1")
-                                        .background()
-                                        .childButton(4, 1, () ->new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
-                                                new SimpleMenu.SBuilder(3)
-                                                        .title("Child menu 2")
-                                                        .background()
-                                                        .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
-                                                                new SimpleMenu.SBuilder(3)
-                                                                        .title("Child menu 3")
-                                                                        .background()
-
-                                                                        .parentButton(4, 2))
-                                                        .parentButton(4, 2))
-                                        .parentButton(4, 2))
-                        .open(p);
-                break;
-            } case "text": {
-                new SimpleMenu.SBuilder(3)
-                        .title("parent")
-                        .childButton(4, 1, () -> new ItemStack(Material.ANVIL),
-                                new TextMenu.TBuilder()
-                                        .title("Text menu")
-                                        .left(() -> "Default text!")
-                                        //.preventClose()
-                                        .onClose(player -> EnumResult.BACK)
-                                        .onComplete((player, s) -> {
-                                            p.sendMessage("You typed " + s);
-                                            return EnumResult.OK;
-                                        })
-                                )
-                        .open(p);
-
-
-                break;
-            }
-
-
-            /*case "locked": {
-                new SimpleMenu.SBuilder(1)
-                        .title("Test Lockable Menu")
-                        .preventClose()
-                        .button(4, 0,
-                                new Button.Builder()
-                                        .icon(() -> new ItemBuilder(Material.IRON_DOOR).name("Unlock menu").toItem())
-                                        .lmb(interact -> EnumResult.CLOSE))
-                        .open(p);
-                break;
-            } */case "parallax": {
-                new ParallaxMenu.PBuilder()
-                        .title(ChatColor.DARK_GRAY + "Test Parallax Menu")
-                        .action((menu) -> {
-                            ArrayList<Button> result = new ArrayList<>();
-                            Material values[] = Material.values();
-                            for (int i = 0; i < 59; i++) {
-                                Material material = values[Util.randomRange(0, values.length - 1)];
-                                while (!material.isItem()) {
-                                    material = values[Util.randomRange(0, values.length - 1)];
-                                }
-                                Material finalMaterial = material;
-                                result.add(new Button.Builder()
-                                        .icon(() -> new ItemBuilder(finalMaterial).toItem())
-                                        .lmb(interact -> {
-                                            interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
-                                                    interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
-
-                                            // do nothing else on click
-                                            return EnumResult.OK;
-                                        }).get()
-                                );
-                            }
-                            return result;
-                        })
-                        .open(p);
-
-                break;
-            }
-            default:
-                return false;
+        try {
+            EnumTest enumTest = EnumTest.valueOf(args[0].toLowerCase(Locale.ROOT));
+            enumTest.getMenuBuilder().open(p);
+        } catch (Exception e) {
+            p.sendMessage(ChatColor.RED + "" + Arrays.toString(EnumTest.values()));
         }
 
         return true;

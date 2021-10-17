@@ -48,6 +48,13 @@ public class Main extends JavaPlugin {
         new CmdTestMenu(this);
     }
 
+    @Override
+    public void onDisable() {
+        for (AbstractMenu abstractMenu : AbstractMenu.openMenus.values()) {
+            abstractMenu.closeInventory();
+        }
+    }
+
     public void info(String s) {
         Bukkit.getConsoleSender().sendMessage(prefix + ChatColor.DARK_GRAY + s);
     }

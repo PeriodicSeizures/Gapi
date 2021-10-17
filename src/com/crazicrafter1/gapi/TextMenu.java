@@ -114,6 +114,11 @@ public class TextMenu extends AbstractMenu {
             return (TBuilder) super.title(title);
         }
 
+        @Override
+        public TBuilder title(String title, boolean recursiveTitle) {
+            return (TBuilder) super.title(title, recursiveTitle);
+        }
+
         //@Override
         //TBuilder button(int slot, Button.Builder button) {
         //    return (TBuilder) super.button(slot, button);

@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class ParallaxMenu extends SimpleMenu {
+public final class ParallaxMenu extends SimpleMenu {
 
     private static final int ITEM_X = 1;
     private static final int ITEM_Y = 1;
@@ -149,6 +149,11 @@ public class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
+        public PBuilder title(String title, boolean recursiveTitle) {
+            return (PBuilder) super.title(title, recursiveTitle);
+        }
+
+        @Override
         public PBuilder childButton(int x, int y, Supplier<ItemStack> getItemStackFunction, Builder otherMenu) {
             Validate.isTrue(!(x >= ITEM_X && x <= ITEM_X2 && y >= ITEM_Y && y <= ITEM_Y2),
                     "x, y must not be within center block (" + x + ", " + y + ")");
@@ -228,7 +233,7 @@ public class ParallaxMenu extends SimpleMenu {
             buttons.forEach((i, b) -> btns.put(i, b.get()));
 
             ParallaxMenu menu = new ParallaxMenu(player,
-                                                 title,
+                                                 getTitle(),
                                                  btns,
                                                  //preventClose,
                                                  closeFunction,

@@ -34,7 +34,6 @@ public class SimpleMenu extends AbstractMenu {
     void onInventoryClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Object o = invokeButtonAt(event);
-        Main.getInstance().debug("Result: " + o.getClass().getSimpleName());
         invokeResult(event, o);
     }
 
@@ -59,10 +58,6 @@ public class SimpleMenu extends AbstractMenu {
             }
         }
 
-        //if (sendOpenPacket)
-        // Will push event closeInventory if an inventory is opened
-
-
         super.openInventory(sendOpenPacket);
     }
 
@@ -83,6 +78,11 @@ public class SimpleMenu extends AbstractMenu {
             return (SBuilder) super.title(title);
         }
 
+        @Override
+        public SBuilder title(String title, boolean recursiveTitle) {
+            return (SBuilder) super.title(title, recursiveTitle);
+        }
+
         //@Override
         //public SBuilder preventClose() {
         //    return (SBuilder) super.preventClose();
@@ -98,14 +98,13 @@ public class SimpleMenu extends AbstractMenu {
          * @param x horizontal position
          * @param y vertical position
          * @param getItemStackFunction button icon
-         * @param menuToOpen
+         * @param menuToOpen the menu to eventually open
          * @return this
          */
         public SBuilder childButton(int x, int y,
                                     Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
 
             // print before and after for debug
-            Main.getInstance().debug("Got Builder: " + menuToOpen);
             Validate.notNull(menuToOpen);
 
             menuToOpen.parent(this);
@@ -213,7 +212,7 @@ public class SimpleMenu extends AbstractMenu {
             buttons.forEach((i, b) -> btns.put(i, b.get()));
 
             SimpleMenu menu = new SimpleMenu(player,
-                                             title,
+                                             getTitle(),
                                              btns,
                                              //preventClose,
                                              closeFunction,

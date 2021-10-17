@@ -186,11 +186,19 @@ public class Button {
          * @return this
          */
         public Builder child(AbstractMenu.Builder parentBuilder, AbstractMenu.Builder menuToOpen) {
+
+            Validate.notNull(parentBuilder, "Parent must not be null");
+            Validate.notNull(menuToOpen, "Menu must not be null");
+
             menuToOpen.parent(parentBuilder);
             return bind(menuToOpen, EnumPress.LMB);
         }
 
         public Builder child(AbstractMenu.Builder parentBuilder, AbstractMenu.Builder menuToOpen, Function<Button.Interact, Object> rightClickListener) {
+
+            Validate.notNull(parentBuilder, "Parent must not be null");
+            Validate.notNull(menuToOpen, "Menu must not be null");
+
             menuToOpen.parent(parentBuilder);
             append(EnumPress.RMB, rightClickListener);
             return bind(menuToOpen, EnumPress.LMB);
