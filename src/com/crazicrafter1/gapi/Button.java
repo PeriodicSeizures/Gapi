@@ -35,6 +35,17 @@ public class Button {
         public int getPressedNumberKey() {
             return numberKeySlot;
         }
+
+        @Override
+        public String toString() {
+            return "Interact{" +
+                    "player=" + player.getName() +
+                    ", heldItem=" + heldItem +
+                    ", clickedItem=" + clickedItem +
+                    ", shift=" + shift +
+                    ", numberKeySlot=" + numberKeySlot +
+                    '}';
+        }
     }
 
     /*

@@ -110,6 +110,11 @@ public abstract class AbstractMenu {
             return EnumResult.OK;
         }
 
+        /// TODO
+        /// something here might be broken
+        /// To reproduce issues:
+        ///  - left click with no cancel
+        ///  - left click again
         Button.Interact interact =
                 new Button.Interact(player,
                         Objects.requireNonNull(event.getCursor()).getType() != Material.AIR ?
@@ -117,6 +122,8 @@ public abstract class AbstractMenu {
                         event.getCurrentItem(),
                         event.isShiftClick(),
                         event.getClick() == ClickType.NUMBER_KEY ? event.getSlot() : -1);
+
+        //Main.getInstance().error("" + interact);
 
         if (event.isLeftClick() && button.leftClickFunction != null)
             return button.leftClickFunction.apply(interact);
