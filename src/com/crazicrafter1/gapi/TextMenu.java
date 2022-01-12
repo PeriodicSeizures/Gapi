@@ -41,7 +41,7 @@ public class TextMenu extends AbstractMenu {
                      String inventoryTitle,
                      HashMap<Integer, Button> buttons,
                      //boolean preventClose,
-                     Function<Player, EnumResult> closeFunction,
+                     BiFunction<Player, Boolean, EnumResult> closeFunction,
                      Builder parentBuilder,
                      Builder thisBuilder
 
@@ -130,7 +130,7 @@ public class TextMenu extends AbstractMenu {
         //}
 
         @Override
-        public TBuilder onClose(Function<Player, EnumResult> closeFunction) {
+        public TBuilder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
             return (TBuilder) super.onClose(closeFunction);
         }
 

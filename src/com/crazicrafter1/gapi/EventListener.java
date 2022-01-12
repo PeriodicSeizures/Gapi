@@ -38,6 +38,8 @@ public class EventListener implements Listener {
         AbstractMenu menu = AbstractMenu.openMenus.get(event.getPlayer().getUniqueId());
 
         // If the event is stupid
+        // in the case of where the menu was
+        // closed completely or a new menu was opened
         if (menu != null) {
             menu.onInventoryClose(event);
         }

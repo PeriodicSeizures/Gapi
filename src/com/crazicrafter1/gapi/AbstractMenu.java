@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public abstract class AbstractMenu {
 
@@ -30,7 +29,7 @@ public abstract class AbstractMenu {
     String inventoryTitle;
     final HashMap<Integer, Button> buttons;
     //boolean preventClose;
-    final Function<Player, EnumResult> closeFunction;
+    final BiFunction<Player, Boolean, EnumResult> closeFunction;
     private final AbstractMenu.Builder parentBuilder;
     final AbstractMenu.Builder thisBuilder;
 
@@ -48,7 +47,7 @@ public abstract class AbstractMenu {
                  String inventoryTitle,
                  HashMap<Integer, Button> buttons,
                  //boolean preventClose,
-                 Function<Player, EnumResult> closeFunction,
+                 BiFunction<Player, Boolean, EnumResult> closeFunction,
                  Builder parentBuilder,
                  Builder thisBuilder
     ) {
@@ -84,6 +83,12 @@ public abstract class AbstractMenu {
     }
 
     void closeInventory(boolean sendClosePacket) {
+        if (status == Status.REROUTING) {
+            if (closeFunction != null)
+                invokeResult(null, closeFunction.apply(player, true));
+
+            return;
+        }
         if (status != Status.OPEN) {
             return;
         }
@@ -100,7 +105,7 @@ public abstract class AbstractMenu {
             player.closeInventory();
 
         if (closeFunction != null)
-            invokeResult(null, closeFunction.apply(player));
+            invokeResult(null, closeFunction.apply(player, false));
     }
 
     final Object invokeButtonAt(InventoryClickEvent event) {
@@ -139,9 +144,10 @@ public abstract class AbstractMenu {
 
     void invokeResult(InventoryClickEvent event, Object o) {
         Main.getInstance().debug("Click invocation result: " + o);
-        if (o instanceof Builder)
-            ((Builder)o).open(player);
-        else if (o instanceof String) {
+        if (o instanceof Builder) {
+            Main.getInstance().info("invokeResult: Got Builder");
+            ((Builder) o).open(player);
+        } else if (o instanceof String) {
             if (!(this instanceof TextMenu)) {
                 throw new UnsupportedOperationException("EnumResult.TEXT is only usable with TextMenu");
             }
@@ -149,6 +155,8 @@ public abstract class AbstractMenu {
                     new ItemBuilder(Objects.requireNonNull(inventory.getItem(TextMenu.Slot.SLOT_LEFT))).name((String) o, false).toItem());
         }
         else if (o instanceof EnumResult) {
+            Main.getInstance().info("invokeResult: Got EnumResult");
+
             EnumResult result = (EnumResult) o;
 
             switch (result) {
@@ -197,10 +205,9 @@ public abstract class AbstractMenu {
      *  - InventoryCloseEvent ->
      */
     void onInventoryClose(InventoryCloseEvent event) {
-
+        closeInventory(false);
+        Main.getInstance().info("AbstractMenu::onInventoryClose(): " + status.name());
         if (status != Status.REROUTING) {
-            closeInventory(false);
-
             //if (preventClose) {
             //    //parentMenuBuilder.open(player);
             //    new BukkitRunnable() {
@@ -235,10 +242,11 @@ public abstract class AbstractMenu {
         final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
 
         String title;
+        //BiConsumer<AbstractMenu, Builder> openFunction;
         HashMap<Integer, Button.Builder> buttons = new HashMap<>();
         //boolean preventClose = false;
-        Function<Player, EnumResult> closeFunction;
         public AbstractMenu.Builder parentMenuBuilder;
+        BiFunction<Player, Boolean, EnumResult> closeFunction;
 
         boolean recursiveTitle = false;
 
@@ -253,12 +261,19 @@ public abstract class AbstractMenu {
             return this;
         }
 
+        //
+        //public Builder onOpen(BiConsumer<AbstractMenu, Builder> openFunction) {
+        //    // apply it
+        //    this.openFunction = openFunction;
+        //    return this;
+        //}
+
         //public Builder preventClose() {
         //    preventClose = true;
         //    return this;
         //}
 
-        public Builder onClose(Function<Player, EnumResult> closeFunction) {
+        public Builder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
             Validate.notNull(closeFunction);
             this.closeFunction = closeFunction;
             return this;
@@ -276,6 +291,7 @@ public abstract class AbstractMenu {
         }
 
         final Builder button(int slot, Button.Builder button) {
+            Validate.notNull(button);
             buttons.put(slot, button);
             return this;
         }

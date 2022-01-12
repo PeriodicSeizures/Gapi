@@ -9,6 +9,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -20,7 +21,7 @@ public class SimpleMenu extends AbstractMenu {
                String inventoryTitle,
                HashMap<Integer, Button> buttons,
                //boolean preventClose,
-               Function<Player, EnumResult> closeFunction,
+               BiFunction<Player, Boolean, EnumResult> closeFunction,
                Builder parentBuilder,
                Builder thisBuilder,
                ItemStack background,
@@ -89,7 +90,7 @@ public class SimpleMenu extends AbstractMenu {
         //}
 
         @Override
-        public SBuilder onClose(Function<Player, EnumResult> closeFunction) {
+        public SBuilder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
             return (SBuilder) super.onClose(closeFunction);
         }
 

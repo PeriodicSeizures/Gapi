@@ -43,7 +43,7 @@ public enum EnumTest {
                             .title("Text menu")
                             .left(() -> "Default text!")
                             //.preventClose()
-                            .onClose(player -> EnumResult.BACK)
+                            .onClose((player, reroute) -> EnumResult.BACK)
                             .onComplete((player, s) -> {
                                 player.sendMessage("You typed " + s);
                                 return EnumResult.OK;

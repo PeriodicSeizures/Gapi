@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -35,7 +36,7 @@ public final class ParallaxMenu extends SimpleMenu {
                          String inventoryTitle,
                          HashMap<Integer, Button> buttons,
                          //boolean preventClose,
-                         Function<Player, EnumResult> closeFunction,
+                         BiFunction<Player, Boolean, EnumResult> closeFunction,
                          Builder parentBuilder,
                          Builder thisBuilder,
                          ItemStack background,
@@ -176,7 +177,7 @@ public final class ParallaxMenu extends SimpleMenu {
         //}
 
         @Override
-        public PBuilder onClose(Function<Player, EnumResult> closeFunction) {
+        public PBuilder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
             return (PBuilder) super.onClose(closeFunction);
         }
 
