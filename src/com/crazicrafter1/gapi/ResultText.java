@@ -19,9 +19,9 @@ class ResultText extends Result {
     public void invoke(AbstractMenu menu, InventoryClickEvent event) {
         Validate.isTrue(menu instanceof TextMenu, "Must be used with text menu");
 
-        menu.inventory.setItem(TextMenu.Slot.SLOT_LEFT,
+        menu.inventory.setItem(TextMenu.SLOT_LEFT,
                 new ItemBuilder(Objects.requireNonNull(
-                        menu.inventory.getItem(TextMenu.Slot.SLOT_LEFT)))
+                        menu.inventory.getItem(TextMenu.SLOT_LEFT)))
                         .name(text, false).toItem());
 
 

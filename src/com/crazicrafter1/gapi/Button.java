@@ -13,8 +13,8 @@ public class Button {
         public Player player;
         public ItemStack heldItem;
         public ItemStack clickedItem;
-        boolean shift;
-        int numberKeySlot;
+        public boolean shift;
+        public int numberKeySlot;
 
         public Interact(Player player,
                         ItemStack heldItem,
