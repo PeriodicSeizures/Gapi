@@ -21,33 +21,32 @@ import java.util.function.*;
 
 public abstract class AbstractMenu {
 
-    final static HashMap<UUID, AbstractMenu> openMenus =
-            new HashMap<>();
-
-    final Player player;
-
-    String inventoryTitle;
-    final HashMap<Integer, Button> buttons;
-    //boolean preventClose;
-    final BiFunction<Player, Boolean, EnumResult> closeFunction;
-    private final AbstractMenu.Builder parentBuilder;
-    final AbstractMenu.Builder thisBuilder;
-
-    Inventory inventory;
-
-    Status status;
-
     enum Status {
         OPEN,
         REROUTING,
         CLOSED,
     }
 
+    final static HashMap<UUID, AbstractMenu> openMenus =
+            new HashMap<>();
+
+    final Player player;
+
+    final String inventoryTitle;
+    final HashMap<Integer, Button> buttons;
+    final Runnable openRunnable;
+    final BiFunction<Player, Boolean, Result> closeFunction;
+    final AbstractMenu.Builder parentBuilder;
+    final AbstractMenu.Builder thisBuilder;
+
+    Inventory inventory;
+    Status status;
+
     AbstractMenu(Player player,
                  String inventoryTitle,
                  HashMap<Integer, Button> buttons,
-                 //boolean preventClose,
-                 BiFunction<Player, Boolean, EnumResult> closeFunction,
+                 Runnable openRunnable,
+                 BiFunction<Player, Boolean, Result> closeFunction,
                  Builder parentBuilder,
                  Builder thisBuilder
     ) {
@@ -57,7 +56,7 @@ public abstract class AbstractMenu {
 
         this.inventoryTitle = inventoryTitle;
         this.buttons = buttons;
-        //this.preventClose = preventClose;
+        this.openRunnable = openRunnable;
         this.closeFunction = closeFunction;
         this.parentBuilder = parentBuilder;
         this.thisBuilder = thisBuilder;
@@ -108,18 +107,13 @@ public abstract class AbstractMenu {
             invokeResult(null, closeFunction.apply(player, false));
     }
 
-    final Object invokeButtonAt(InventoryClickEvent event) {
+    final Result invokeButtonAt(InventoryClickEvent event) {
         Button button = buttons.get(event.getSlot());
 
         if (button == null) {
-            return EnumResult.OK;
+            return null;
         }
 
-        /// TODO
-        /// something here might be broken
-        /// To reproduce issues:
-        ///  - left click with no cancel
-        ///  - left click again
         Button.Interact interact =
                 new Button.Interact(player,
                         Objects.requireNonNull(event.getCursor()).getType() != Material.AIR ?
@@ -127,8 +121,6 @@ public abstract class AbstractMenu {
                         event.getCurrentItem(),
                         event.isShiftClick(),
                         event.getClick() == ClickType.NUMBER_KEY ? event.getSlot() : -1);
-
-        //Main.getInstance().error("" + interact);
 
         if (event.isLeftClick() && button.leftClickFunction != null)
             return button.leftClickFunction.apply(interact);
@@ -139,49 +131,14 @@ public abstract class AbstractMenu {
         else if (event.getClick() == ClickType.NUMBER_KEY && button.numberKeyFunction != null)
             return button.numberKeyFunction.apply(interact);
         else
-            return EnumResult.OK;
+            return null;
     }
 
-    void invokeResult(InventoryClickEvent event, Object o) {
-        Main.getInstance().debug("Click invocation result: " + o);
-        if (o instanceof Builder) {
-            Main.getInstance().info("invokeResult: Got Builder");
-            ((Builder) o).open(player);
-        } else if (o instanceof String) {
-            if (!(this instanceof TextMenu)) {
-                throw new UnsupportedOperationException("EnumResult.TEXT is only usable with TextMenu");
-            }
-            inventory.setItem(TextMenu.Slot.SLOT_LEFT,
-                    new ItemBuilder(Objects.requireNonNull(inventory.getItem(TextMenu.Slot.SLOT_LEFT))).name((String) o, false).toItem());
-        }
-        else if (o instanceof EnumResult) {
-            Main.getInstance().info("invokeResult: Got EnumResult");
+    void invokeResult(InventoryClickEvent event, Result result) {
+        Main.getInstance().debug("Click invocation result: " + result);
 
-            EnumResult result = (EnumResult) o;
-
-            switch (result) {
-                case GRAB_ITEM: event.setCancelled(false); break;
-                case CLOSE: closeInventory(true); break;
-                case BACK: new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        status = Status.REROUTING;
-                        parentBuilder.open(player);
-                    }
-                }.runTaskLater(Main.getInstance(), 0);
-                break;
-                case REFRESH: new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        inventory.clear();
-                        openInventory(false);
-                    }
-                }.runTaskLater(Main.getInstance(), 0);
-                break;
-            }
-        }
-        else
-            throw new RuntimeException("Returned object must be of AbstractMenu.Builder, String, or EnumResult. Got: " + o);
+        if (result != null)
+            result.invoke(this, event);
     }
 
     /**
@@ -198,28 +155,12 @@ public abstract class AbstractMenu {
         }
     }
 
-    /**
-     * Open has the intentional effects of preventing anomalies
-     * from happening due to either:
-     *  - InventoryClickEvent -> close
-     *  - InventoryCloseEvent ->
-     */
     void onInventoryClose(InventoryCloseEvent event) {
         closeInventory(false);
         Main.getInstance().info("AbstractMenu::onInventoryClose(): " + status.name());
         if (status != Status.REROUTING) {
-            //if (preventClose) {
-            //    //parentMenuBuilder.open(player);
-            //    new BukkitRunnable() {
-            //        @Override
-            //        public void run() {
-            //            openInventory(true);
-            //        }
-            //    }.runTaskLater(Main.getInstance(), 0);
-            //} else {
-                openMenus.remove(player.getUniqueId());
-                Main.getInstance().debug("Removed AbstractMenu from HashMap");
-            //}
+            openMenus.remove(player.getUniqueId());
+            Main.getInstance().debug("Removed AbstractMenu from HashMap");
         }
     }
 
@@ -229,6 +170,13 @@ public abstract class AbstractMenu {
 
     void delButton(int x, int y) {
         buttons.remove(y*9 + x);
+    }
+
+
+
+    public Button getButton(int x, int y) {
+
+        return buttons.get(y*9 + x);
     }
 
     /**
@@ -242,11 +190,11 @@ public abstract class AbstractMenu {
         final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
 
         String title;
-        //BiConsumer<AbstractMenu, Builder> openFunction;
         HashMap<Integer, Button.Builder> buttons = new HashMap<>();
         //boolean preventClose = false;
         public AbstractMenu.Builder parentMenuBuilder;
-        BiFunction<Player, Boolean, EnumResult> closeFunction;
+        Runnable openRunnable;
+        BiFunction<Player, Boolean, Result> closeFunction;
 
         boolean recursiveTitle = false;
 
@@ -261,19 +209,13 @@ public abstract class AbstractMenu {
             return this;
         }
 
-        //
-        //public Builder onOpen(BiConsumer<AbstractMenu, Builder> openFunction) {
-        //    // apply it
-        //    this.openFunction = openFunction;
-        //    return this;
-        //}
+        public Builder onOpen(Runnable openRunnable) {
+            // apply it
+            this.openRunnable = openRunnable;
+            return this;
+        }
 
-        //public Builder preventClose() {
-        //    preventClose = true;
-        //    return this;
-        //}
-
-        public Builder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
+        public Builder onClose(BiFunction<Player, Boolean, Result> closeFunction) {
             Validate.notNull(closeFunction);
             this.closeFunction = closeFunction;
             return this;

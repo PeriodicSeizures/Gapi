@@ -43,10 +43,10 @@ public enum EnumTest {
                             .title("Text menu")
                             .left(() -> "Default text!")
                             //.preventClose()
-                            .onClose((player, reroute) -> EnumResult.BACK)
+                            .onClose((player, reroute) -> Result.BACK())
                             .onComplete((player, s) -> {
                                 player.sendMessage("You typed " + s);
-                                return EnumResult.OK;
+                                return null;
                             })
             )),
     TITLES(                new SimpleMenu.SBuilder(3)
@@ -71,7 +71,7 @@ public enum EnumTest {
     ),
     PARALLAX(new ParallaxMenu.PBuilder()
             .title(ChatColor.DARK_GRAY + "Test Parallax Menu")
-            .action((menu) -> {
+            .addAll((menu) -> {
                 ArrayList<Button> result = new ArrayList<>();
                 Material values[] = Material.values();
                 for (int i = 0; i < 59; i++) {
@@ -82,12 +82,12 @@ public enum EnumTest {
                     Material finalMaterial = material;
                     result.add(new Button.Builder()
                             .icon(() -> new ItemBuilder(finalMaterial).toItem())
-                            .lmb(interact -> {
+                            .lmb((interact) -> {
                                 interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
                                         interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
 
                                 // do nothing else on click
-                                return EnumResult.OK;
+                                return null;
                             }).get()
                     );
                 }

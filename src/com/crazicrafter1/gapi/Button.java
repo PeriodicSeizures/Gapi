@@ -116,17 +116,17 @@ public class Button {
 
     //ItemStack itemStack;
     Supplier<ItemStack> getItemStackFunction;
-    final Function<Interact, Object> leftClickFunction;
-    final Function<Interact, Object> middleClickFunction;
-    final Function<Interact, Object> rightClickFunction;
-    final Function<Interact, Object> numberKeyFunction;
+    final Function<Interact, Result> leftClickFunction;
+    final Function<Interact, Result> middleClickFunction;
+    final Function<Interact, Result> rightClickFunction;
+    final Function<Interact, Result> numberKeyFunction;
 
-    Button(//ItemStack itemStack,
+    Button(
            Supplier<ItemStack> getItemStackFunction,
-           Function<Interact, Object> leftClickFunction,
-           Function<Interact, Object> middleClickFunction,
-           Function<Interact, Object> rightClickFunction,
-           Function<Interact, Object> numberKeyFunction) {
+           Function<Interact, Result> leftClickFunction,
+           Function<Interact, Result> middleClickFunction,
+           Function<Interact, Result> rightClickFunction,
+           Function<Interact, Result> numberKeyFunction) {
         //this.itemStack = itemStack;
         this.getItemStackFunction = getItemStackFunction;
         this.leftClickFunction = leftClickFunction;
@@ -138,10 +138,10 @@ public class Button {
     public static class Builder {
         //private ItemStack itemStack;
         Supplier<ItemStack> getItemStackFunction;
-        Function<Interact, Object> leftClickFunction;
-        Function<Interact, Object> middleClickFunction;
-        Function<Interact, Object> rightClickFunction;
-        Function<Interact, Object> numberKeyFunction;
+        Function<Interact, Result> leftClickFunction;
+        Function<Interact, Result> middleClickFunction;
+        Function<Interact, Result> rightClickFunction;
+        Function<Interact, Result> numberKeyFunction;
 
         //public Builder icon(ItemStack itemStack) {
         //    this.itemStack = itemStack;
@@ -155,22 +155,22 @@ public class Button {
             return this;
         }
 
-        public Builder lmb(Function<Interact, Object> leftClickFunction) {
+        public Builder lmb(Function<Interact, Result> leftClickFunction) {
             this.leftClickFunction = leftClickFunction;
             return this;
         }
 
-        public Builder mmb(Function<Interact, Object> middleClickFunction) {
+        public Builder mmb(Function<Interact, Result> middleClickFunction) {
             this.middleClickFunction = middleClickFunction;
             return this;
         }
 
-        public Builder rmb(Function<Interact, Object> rightClickFunction) {
+        public Builder rmb(Function<Interact, Result> rightClickFunction) {
             this.rightClickFunction = rightClickFunction;
             return this;
         }
 
-        public Builder num(Function<Interact, Object> numberKeyFunction) {
+        public Builder num(Function<Interact, Result> numberKeyFunction) {
             this.numberKeyFunction = numberKeyFunction;
             return this;
         }
@@ -182,12 +182,23 @@ public class Button {
          * @param press which press
          * @return this
          */
+
         public Builder bind(AbstractMenu.Builder menuToOpen,
                             EnumPress press) {
 
             Validate.notNull(menuToOpen, "Supplied menu must not be null");
 
-            return this.append(press, (interact) -> EnumResult.OPEN(menuToOpen));
+            return this.append(press, (interact) -> Result.OPEN(menuToOpen));
+        }
+        @Deprecated
+        /// New binder
+        public Builder bind(Supplier<AbstractMenu.Builder> menuToOpen,
+                            EnumPress press) {
+
+            Validate.notNull(menuToOpen, "Supplied menu must not be null");
+
+            //return this.append(press, (interact, self) -> EnumResult.OPEN(menuToOpen));
+            return this.append(press, (interact) -> Result.OPEN(menuToOpen.get()));
         }
 
         /**
@@ -196,6 +207,7 @@ public class Button {
          * @param menuToOpen the menu to open
          * @return this
          */
+
         public Builder child(AbstractMenu.Builder parentBuilder, AbstractMenu.Builder menuToOpen) {
 
             Validate.notNull(parentBuilder, "Parent must not be null");
@@ -205,7 +217,9 @@ public class Button {
             return bind(menuToOpen, EnumPress.LMB);
         }
 
-        public Builder child(AbstractMenu.Builder parentBuilder, AbstractMenu.Builder menuToOpen, Function<Button.Interact, Object> rightClickListener) {
+        public Builder child(AbstractMenu.Builder parentBuilder,
+                             AbstractMenu.Builder menuToOpen,
+                             Function<Interact, Result> rightClickListener) {
 
             Validate.notNull(parentBuilder, "Parent must not be null");
             Validate.notNull(menuToOpen, "Menu must not be null");
@@ -221,7 +235,7 @@ public class Button {
          * @param func
          * @return
          */
-        public Builder append(EnumPress press, Function<Interact, Object> func) {
+        public Builder append(EnumPress press, Function<Interact, Result> func) {
 
             if (press != null)
                 switch (press) {

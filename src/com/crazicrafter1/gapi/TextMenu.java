@@ -40,17 +40,20 @@ public class TextMenu extends AbstractMenu {
     private TextMenu(Player player,
                      String inventoryTitle,
                      HashMap<Integer, Button> buttons,
-                     //boolean preventClose,
-                     BiFunction<Player, Boolean, EnumResult> closeFunction,
+                     Runnable openRunnable,
+                     BiFunction<Player, Boolean, Result> closeFunction,
                      Builder parentBuilder,
                      Builder thisBuilder
 
     ) {
-        super(player, inventoryTitle, buttons/*, preventClose*/, closeFunction, parentBuilder, thisBuilder);
+        super(player, inventoryTitle, buttons, openRunnable, closeFunction, parentBuilder, thisBuilder);
     }
 
     @Override
     void openInventory(boolean sendOpenPacket) {
+        if (openRunnable != null)
+            openRunnable.run();
+
         WRAPPER.handleInventoryCloseEvent(player);
         WRAPPER.setActiveContainerDefault(player);
 
@@ -100,8 +103,7 @@ public class TextMenu extends AbstractMenu {
         final ItemStack clicked = inventory.getItem(Slot.SLOT_OUTPUT);
         if (clicked == null || clicked.getType() == Material.AIR) return;
 
-        Object o = invokeButtonAt(event);
-        invokeResult(event, o);
+        invokeResult(event, invokeButtonAt(event));
     }
 
     public static class TBuilder extends Builder {
@@ -130,7 +132,12 @@ public class TextMenu extends AbstractMenu {
         //}
 
         @Override
-        public TBuilder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
+        public TBuilder onOpen(Runnable openRunnable) {
+            return (TBuilder) super.onOpen(openRunnable);
+        }
+
+        @Override
+        public TBuilder onClose(BiFunction<Player, Boolean, Result> closeFunction) {
             return (TBuilder) super.onClose(closeFunction);
         }
 
@@ -152,9 +159,9 @@ public class TextMenu extends AbstractMenu {
         //    return super.button(Slot.SLOT_RIGHT)
         //}
 
-        public TBuilder onComplete(BiFunction<Player, String, Object> completeFunction) {
+        public TBuilder onComplete(BiFunction<Player, String, Result> completeFunction) {
             return (TBuilder) this.button(Slot.SLOT_OUTPUT, new Button.Builder()
-                    .lmb(interact -> completeFunction.apply(interact.player,
+                    .lmb((interact) -> completeFunction.apply(interact.player,
                             interact.clickedItem.hasItemMeta() ? interact.clickedItem.getItemMeta().getDisplayName() : ""))
             );
             //this.completeFunction = completeFunction;
@@ -245,7 +252,7 @@ public class TextMenu extends AbstractMenu {
             TextMenu textMenu = new TextMenu(player,
                                              title,
                                              btns,
-                                             //preventClose,
+                                             openRunnable,
                                              closeFunction,
                                              parentMenuBuilder,
                                              this);

@@ -1,6 +1,7 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
+import jdk.jfr.Experimental;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,13 +21,13 @@ public class SimpleMenu extends AbstractMenu {
     SimpleMenu(Player player,
                String inventoryTitle,
                HashMap<Integer, Button> buttons,
-               //boolean preventClose,
-               BiFunction<Player, Boolean, EnumResult> closeFunction,
+               Runnable openRunnable,
+               BiFunction<Player, Boolean, Result> closeFunction,
                Builder parentBuilder,
                Builder thisBuilder,
                ItemStack background,
                int columns) {
-        super(player, inventoryTitle, buttons /*,preventClose*/, closeFunction, parentBuilder, thisBuilder);
+        super(player, inventoryTitle, buttons, openRunnable, closeFunction, parentBuilder, thisBuilder);
         this.background = background;
         this.columns = columns;
     }
@@ -34,8 +35,7 @@ public class SimpleMenu extends AbstractMenu {
     @Override
     void onInventoryClick(InventoryClickEvent event) {
         event.setCancelled(true);
-        Object o = invokeButtonAt(event);
-        invokeResult(event, o);
+        invokeResult(event, invokeButtonAt(event));
     }
 
     void button(int x, int y, Button button) {
@@ -48,6 +48,14 @@ public class SimpleMenu extends AbstractMenu {
 
     @Override
     void openInventory(boolean sendOpenPacket) {
+
+        Main.getInstance().info("SimpleMenu::openInventory");
+
+        if (openRunnable != null) {
+            Main.getInstance().info("SimpleMenu openRunnable");
+            openRunnable.run();
+        }
+
         if (sendOpenPacket) {
             this.inventory = Bukkit.createInventory(null, columns * 9, inventoryTitle);
             player.openInventory(inventory);
@@ -84,13 +92,13 @@ public class SimpleMenu extends AbstractMenu {
             return (SBuilder) super.title(title, recursiveTitle);
         }
 
-        //@Override
-        //public SBuilder preventClose() {
-        //    return (SBuilder) super.preventClose();
-        //}
+        @Override
+        public SBuilder onOpen(Runnable openRunnable) {
+            return (SBuilder) super.onOpen(openRunnable);
+        }
 
         @Override
-        public SBuilder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
+        public SBuilder onClose(BiFunction<Player, Boolean, Result> closeFunction) {
             return (SBuilder) super.onClose(closeFunction);
         }
 
@@ -99,23 +107,38 @@ public class SimpleMenu extends AbstractMenu {
          * @param x horizontal position
          * @param y vertical position
          * @param getItemStackFunction button icon
-         * @param menuToOpen the menu to eventually open
+         * @param builder the menu to eventually open
          * @return this
          */
         public SBuilder childButton(int x, int y,
-                                    Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
+                                    Supplier<ItemStack> getItemStackFunction, Builder builder) {
 
             // print before and after for debug
-            Validate.notNull(menuToOpen);
+            Validate.notNull(builder);
 
-            menuToOpen.parent(this);
+            builder.parent(this);
 
-            return this.bind(x, y, EnumPress.LMB, getItemStackFunction, menuToOpen);
+            return this.bind(x, y, EnumPress.LMB, getItemStackFunction, builder);
+        }
+
+        @Deprecated
+        /// Builder lambda?
+        public SBuilder childButton(int x, int y,
+                                    Supplier<ItemStack> getItemStackFunction, Supplier<Builder> builder) {
+
+            // print before and after for debug
+            Validate.notNull(builder);
+
+
+
+           //builder.parent(this);
+
+            return this.bind(x, y, EnumPress.LMB, getItemStackFunction, builder);
         }
 
         public SBuilder childButton(int x, int y,
                                     Supplier<ItemStack> getItemStackFunction, Builder menuToOpen,
-                                    Function<Button.Interact, Object> rightClickListener) {
+                                    Function<Button.Interact, Result> rightClickListener) {
 
             menuToOpen.parent(this);
 
@@ -166,7 +189,7 @@ public class SimpleMenu extends AbstractMenu {
 
             return button(x, y, new Button.Builder()
                     .icon(getItemStackFunction)
-                    .lmb(interact -> EnumResult.BACK));
+                    .lmb((interact) -> Result.BACK()));
 
             //return this.bind(x, y, EnumPress.LMB, itemStack, parentMenuBuilder);
         }
@@ -183,11 +206,25 @@ public class SimpleMenu extends AbstractMenu {
         public SBuilder bind(int x, int y,
                              EnumPress press,
                              Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
-            //menuToOpen.parent(this);
-            //this.parent(menuToOpen);
+            menuToOpen.parent(this);
 
             this.getOrMakeButton(x, y, getItemStackFunction)
                     .bind(menuToOpen, press);
+            return this;
+        }
+
+        @Deprecated
+        /// New Binder
+        public SBuilder bind(int x, int y,
+                             EnumPress press,
+                             Supplier<ItemStack> getItemStackFunction, Supplier<Builder> builderSupplier) {
+            //menuToOpen.parent(this);
+            //this.parent(menuToOpen);
+
+            /// Set the parent during lambda call
+
+            this.getOrMakeButton(x, y, getItemStackFunction)
+                    .bind(builderSupplier, press);
             return this;
         }
 
@@ -215,7 +252,7 @@ public class SimpleMenu extends AbstractMenu {
             SimpleMenu menu = new SimpleMenu(player,
                                              getTitle(),
                                              btns,
-                                             //preventClose,
+                                             openRunnable,
                                              closeFunction,
                                              parentMenuBuilder,
                                              this,

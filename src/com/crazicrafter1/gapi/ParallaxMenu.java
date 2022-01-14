@@ -35,15 +35,15 @@ public final class ParallaxMenu extends SimpleMenu {
     private ParallaxMenu(Player player,
                          String inventoryTitle,
                          HashMap<Integer, Button> buttons,
-                         //boolean preventClose,
-                         BiFunction<Player, Boolean, EnumResult> closeFunction,
+                         Runnable openRunnable,
+                         BiFunction<Player, Boolean, Result> closeFunction,
                          Builder parentBuilder,
                          Builder thisBuilder,
                          ItemStack background,
                          //ArrayList<Button> orderedButtons
                          Function<Builder, ArrayList<Button>> orderedButtonsFunc
     ) {
-        super(player, inventoryTitle, buttons/*, preventClose*/, closeFunction, parentBuilder, thisBuilder, background, 6);
+        super(player, inventoryTitle, buttons, openRunnable, closeFunction, parentBuilder, thisBuilder, background, 6);
         //this.orderedButtons = orderedButtons;
         this.orderedButtonsFunc = orderedButtonsFunc;
     }
@@ -61,9 +61,9 @@ public final class ParallaxMenu extends SimpleMenu {
             //
             button(0, 5, new Button.Builder()
                     .icon(() -> new ItemBuilder(Material.ARROW).name("&aPrevious Page").lore("&ePage " + (page-1)).toItem())
-                    .lmb(interact -> {
+                    .lmb((interact) -> {
                         prevPage();
-                        return EnumResult.OK;
+                        return null;
                     }).get());
 
         } else
@@ -72,9 +72,9 @@ public final class ParallaxMenu extends SimpleMenu {
         if (page < getMaxPages(orderedButtons.size())) {
             button(8, 5, new Button.Builder()
                     .icon(() -> new ItemBuilder(Material.ARROW).name("&aNext Page").lore("&ePage " + (page+1)).toItem())
-                    .lmb(interact -> {
+                    .lmb((interact) -> {
                         nextPage(orderedButtons.size());
-                        return EnumResult.OK;
+                        return null;
                     }).get());
         } else
             delButton(8, 5);
@@ -137,7 +137,8 @@ public final class ParallaxMenu extends SimpleMenu {
             super(6);
         }
 
-        public PBuilder action(Function<Builder, ArrayList<Button>> orderedButtonsFunc) {
+
+        public PBuilder addAll(Function<Builder, ArrayList<Button>> orderedButtonsFunc) {
             Validate.notNull(orderedButtonsFunc);
             this.orderedButtonsFunc = orderedButtonsFunc;
 
@@ -171,13 +172,13 @@ public final class ParallaxMenu extends SimpleMenu {
             return (PBuilder) super.button(x, y, button);
         }
 
-        //@Override
-        //public PBuilder preventClose() {
-        //    return (PBuilder) super.preventClose();
-        //}
+        @Override
+        public PBuilder onOpen(Runnable openRunnable) {
+            return (PBuilder) super.onOpen(openRunnable);
+        }
 
         @Override
-        public PBuilder onClose(BiFunction<Player, Boolean, EnumResult> closeFunction) {
+        public PBuilder onClose(BiFunction<Player, Boolean, Result> closeFunction) {
             return (PBuilder) super.onClose(closeFunction);
         }
 
@@ -236,7 +237,7 @@ public final class ParallaxMenu extends SimpleMenu {
             ParallaxMenu menu = new ParallaxMenu(player,
                                                  getTitle(),
                                                  btns,
-                                                 //preventClose,
+                                                 openRunnable,
                                                  closeFunction,
                                                  parentMenuBuilder,
                                                  this,
