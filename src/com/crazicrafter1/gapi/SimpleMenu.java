@@ -1,7 +1,6 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
-import jdk.jfr.Experimental;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -48,11 +47,7 @@ public class SimpleMenu extends AbstractMenu {
 
     @Override
     void openInventory(boolean sendOpenPacket) {
-
-        Main.getInstance().info("SimpleMenu::openInventory");
-
         if (openRunnable != null) {
-            Main.getInstance().info("SimpleMenu openRunnable");
             openRunnable.run();
         }
 
@@ -103,7 +98,7 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         /**
-         * Set the menu to open with default LMB bound button
+         * Bind a sub menu with LMB as the default button
          * @param x horizontal position
          * @param y vertical position
          * @param getItemStackFunction button icon
@@ -112,26 +107,7 @@ public class SimpleMenu extends AbstractMenu {
          */
         public SBuilder childButton(int x, int y,
                                     Supplier<ItemStack> getItemStackFunction, Builder builder) {
-
-            // print before and after for debug
-            Validate.notNull(builder);
-
             builder.parent(this);
-
-            return this.bind(x, y, EnumPress.LMB, getItemStackFunction, builder);
-        }
-
-        @Deprecated
-        /// Builder lambda?
-        public SBuilder childButton(int x, int y,
-                                    Supplier<ItemStack> getItemStackFunction, Supplier<Builder> builder) {
-
-            // print before and after for debug
-            Validate.notNull(builder);
-
-
-
-           //builder.parent(this);
 
             return this.bind(x, y, EnumPress.LMB, getItemStackFunction, builder);
         }
@@ -162,18 +138,12 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         public SBuilder background(ItemStack itemStack) {
-            Validate.notNull(itemStack, "itemstack must not be null");
+            Validate.notNull(itemStack);
             Validate.isTrue(itemStack.getType() != Material.AIR, "itemstack must not be air");
             this.background = itemStack;
             return this;
         }
 
-        /**
-         * Set the prev button target button
-         * @param x
-         * @param y
-         * @return
-         */
         public SBuilder parentButton(int x, int y) {
             return this.parentButton(x, y, () -> PREV_1);
         }
@@ -185,17 +155,13 @@ public class SimpleMenu extends AbstractMenu {
             Validate.isTrue(y >= 0, "y must be greater or equal to 0 (" + y + ")");
             Validate.isTrue(y < columns, "y must be less than columns " + columns + " (" + y + ")");
 
-            //this.parentMenuBuilder =
-
             return button(x, y, new Button.Builder()
                     .icon(getItemStackFunction)
                     .lmb((interact) -> Result.BACK()));
-
-            //return this.bind(x, y, EnumPress.LMB, itemStack, parentMenuBuilder);
         }
 
         /**
-         * Bind a menu to a button at location, upon {@link EnumPress} being invoked
+         * Attach a menu to a button on {@link EnumPress} being invoked
          * @param x horizontal position
          * @param y vertical position
          * @param press bind to which event
@@ -213,38 +179,12 @@ public class SimpleMenu extends AbstractMenu {
             return this;
         }
 
-        @Deprecated
-        /// New Binder
-        public SBuilder bind(int x, int y,
-                             EnumPress press,
-                             Supplier<ItemStack> getItemStackFunction, Supplier<Builder> builderSupplier) {
-            //menuToOpen.parent(this);
-            //this.parent(menuToOpen);
-
-            /// Set the parent during lambda call
-
-            this.getOrMakeButton(x, y, getItemStackFunction)
-                    .bind(builderSupplier, press);
-            return this;
-        }
-
         final Button.Builder getOrMakeButton(int x, int y, Supplier<ItemStack> getItemStackFunction) {
             return super.getOrMakeButton(y*9 + x, getItemStackFunction);
         }
 
-        //@Override
-        //protected SBuilder clone() {
-        //    SBuilder builder = new SBuilder(columns);
-        //    builder.title = title;
-        //    builder.buttons = (HashMap<Integer, Button.Builder>) buttons.clone();
-        //    builder.closeFunction = closeFunction;
-        //    builder.parentMenuBuilder = parentMenuBuilder;
-        //    builder.background = background; //.clone();
-        //    return builder;
-        //}
-
         public SimpleMenu open(Player player) {
-            Validate.notNull(player, "Player cannot be null");
+            Validate.notNull(player);
 
             HashMap<Integer, Button> btns = new HashMap<>();
             buttons.forEach((i, b) -> btns.put(i, b.get()));

@@ -52,7 +52,6 @@ public class EventListener implements Listener {
         AbstractMenu menu = AbstractMenu.openMenus.get(p.getUniqueId());
         if (menu != null) {
             if (event.getInventory().equals(menu.inventory))
-                //event.setCancelled(true);
                 menu.onInventoryDrag(event);
         }
     }

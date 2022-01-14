@@ -26,12 +26,6 @@ public class Main extends JavaPlugin {
         GithubUpdater.autoUpdate(this, "PeriodicSeizures", "Gapi", "Gapi.jar");
 
         if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
-            //GithubInstaller.installDepend(this,
-            //        "PeriodicSeizures",
-            //        "CRUtils",
-            //        "CRUtils.jar",
-            //        "CRUtils");
-            //return;
             error(ChatColor.RED + "Required plugin CRUtils not found");
             Bukkit.getPluginManager().disablePlugin(this);
             return;

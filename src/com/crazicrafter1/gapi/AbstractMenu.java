@@ -11,7 +11,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +49,7 @@ public abstract class AbstractMenu {
                  Builder parentBuilder,
                  Builder thisBuilder
     ) {
-        Validate.notNull(inventoryTitle, "Inventory must be given a title");
+        Validate.notNull(inventoryTitle);
 
         this.player = player;
 
@@ -73,7 +72,6 @@ public abstract class AbstractMenu {
 
         openMenus.put(player.getUniqueId(), this);
         this.status = Status.OPEN;
-        Main.getInstance().debug("Putting AbstractMenu into HashMap");
     }
 
 
@@ -135,15 +133,10 @@ public abstract class AbstractMenu {
     }
 
     void invokeResult(InventoryClickEvent event, Result result) {
-        Main.getInstance().debug("Click invocation result: " + result);
-
         if (result != null)
             result.invoke(this, event);
     }
 
-    /**
-     * Event handlers
-     */
     abstract void onInventoryClick(InventoryClickEvent event);
 
     void onInventoryDrag(InventoryDragEvent event) {
@@ -157,10 +150,9 @@ public abstract class AbstractMenu {
 
     void onInventoryClose(InventoryCloseEvent event) {
         closeInventory(false);
-        Main.getInstance().info("AbstractMenu::onInventoryClose(): " + status.name());
+
         if (status != Status.REROUTING) {
             openMenus.remove(player.getUniqueId());
-            Main.getInstance().debug("Removed AbstractMenu from HashMap");
         }
     }
 
@@ -172,26 +164,12 @@ public abstract class AbstractMenu {
         buttons.remove(y*9 + x);
     }
 
-
-
-    public Button getButton(int x, int y) {
-
-        return buttons.get(y*9 + x);
-    }
-
-    /**
-     * Used to easily build a Menu from scratch
-     * Everything within this class is a one time
-     * construction that will require a refresh/construct method
-     * to reload everything
-     */
     public static abstract class Builder {
 
         final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
 
         String title;
         HashMap<Integer, Button.Builder> buttons = new HashMap<>();
-        //boolean preventClose = false;
         public AbstractMenu.Builder parentMenuBuilder;
         Runnable openRunnable;
         BiFunction<Player, Boolean, Result> closeFunction;
@@ -203,14 +181,13 @@ public abstract class AbstractMenu {
         }
 
         public Builder title(String title, boolean recursiveTitle) {
-            Validate.notNull(title, "title cannot be set to null");
+            Validate.notNull(title);
             this.title = title;
             this.recursiveTitle = recursiveTitle;
             return this;
         }
 
         public Builder onOpen(Runnable openRunnable) {
-            // apply it
             this.openRunnable = openRunnable;
             return this;
         }
@@ -260,7 +237,7 @@ public abstract class AbstractMenu {
                 String path = parentMenuBuilder.getRecursiveTitle() +
                         " > " + this.title;
 
-                if (path.length() > CUT_LENGTH) { // 30 normally
+                if (path.length() > CUT_LENGTH) {
                     return "..." + path.substring(path.length() - CUT_LENGTH);
                 }
                 return path;
@@ -279,8 +256,5 @@ public abstract class AbstractMenu {
          * @return the constructed menu
          */
         public abstract AbstractMenu open(Player player);
-
-
-
     }
 }

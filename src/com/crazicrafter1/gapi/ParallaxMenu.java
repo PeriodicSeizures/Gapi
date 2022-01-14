@@ -3,7 +3,6 @@ package com.crazicrafter1.gapi;
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.Util;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -26,11 +24,9 @@ public final class ParallaxMenu extends SimpleMenu {
     private static final int ITEM_Y2 = ITEM_Y + ITEM_H - 1;
     private static final int SIZE = ITEM_W * ITEM_H;
 
-    //private final ArrayList<Button> orderedButtons;
     private int page = 1;
 
-    //private Consumer<ParallaxMenu.PBuilder> action;
-    private Function<Builder, ArrayList<Button>> orderedButtonsFunc;
+    private final Function<Builder, ArrayList<Button>> orderedButtonsFunc;
 
     private ParallaxMenu(Player player,
                          String inventoryTitle,
@@ -88,23 +84,15 @@ public final class ParallaxMenu extends SimpleMenu {
                 startIndex + Util.clamp(size - startIndex, 0, SIZE),
                 0, size-1);
 
-        loop:
         for (int y = ITEM_Y; y < ITEM_Y2 + 1; y++) {
             for (int x = ITEM_X; x < ITEM_X2 + 1; x++) {
-                // Delete old blocked button
-
-                //Main.getInstance().info("" + startIndex + " " + endIndex);
                 if (startIndex > endIndex) {
                     delButton(x, y);
-                    //break loop;
                 } else {
-
                     button(x, y, orderedButtons.get(startIndex++));
                 }
             }
         }
-
-        //player.openInventory(inventory);
 
         super.openInventory(sendOpenPacket);
     }
@@ -128,15 +116,11 @@ public final class ParallaxMenu extends SimpleMenu {
     }
 
     public static class PBuilder extends SBuilder {
-
-        //private final ArrayList<Button.Builder> orderedButtons = new ArrayList<>();
-
         private Function<Builder, ArrayList<Button>> orderedButtonsFunc;
 
         public PBuilder() {
             super(6);
         }
-
 
         public PBuilder addAll(Function<Builder, ArrayList<Button>> orderedButtonsFunc) {
             Validate.notNull(orderedButtonsFunc);
@@ -208,18 +192,6 @@ public final class ParallaxMenu extends SimpleMenu {
         public PBuilder bind(int x, int y, EnumPress press, Supplier<ItemStack> getItemStackFunction, Builder menuToOpen) {
             return (PBuilder) super.bind(x, y, press, getItemStackFunction, menuToOpen);
         }
-
-        //@Override
-        //protected SBuilder clone() {
-        //    PBuilder builder = new PBuilder();
-        //    builder.title = title;
-        //    builder.buttons = (HashMap<Integer, Button.Builder>) buttons.clone();
-        //    builder.closeFunction = closeFunction;
-        //    builder.parentMenuBuilder = parentMenuBuilder;
-        //    builder.background = background; //.clone();
-        //    builder.orderedButtonsFunc = orderedButtonsFunc;
-        //    return builder;
-        //}
 
         @Override
         void validate() {

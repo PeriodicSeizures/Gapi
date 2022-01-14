@@ -1,4 +1,4 @@
-package com.crazicrafter1.gapi;
+package com.crazicrafter1.gapi.test;
 
 import java.io.File;
 import java.lang.reflect.Method;

@@ -1,7 +1,8 @@
-package com.crazicrafter1.gapi;
+package com.crazicrafter1.gapi.test;
 
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.Util;
+import com.crazicrafter1.gapi.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
