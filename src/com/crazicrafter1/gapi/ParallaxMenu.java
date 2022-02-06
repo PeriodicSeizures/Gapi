@@ -194,12 +194,6 @@ public final class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
-        void validate() {
-            Validate.notNull(orderedButtonsFunc);
-            super.validate();
-        }
-
-        @Override
         public ParallaxMenu open(Player player) {
             Validate.notNull(player, "Player cannot be null");
 

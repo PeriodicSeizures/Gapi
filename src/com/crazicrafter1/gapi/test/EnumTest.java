@@ -15,7 +15,9 @@ public enum EnumTest {
             .title("Simple Menu")
             .background()
             .button(4, 1, new Button.Builder()
-                    .icon(() -> new ItemBuilder(Material.FEATHER).name("&eHello, World!").toItem()))
+                    .icon(() -> new ItemBuilder(Material.FEATHER).name("&eHello, World!").toItem())
+                    .lmb(interact -> Result.MESSAGE("Hello world!"))
+            )
     ),
     NESTED(new SimpleMenu.SBuilder(3)
             .title("Test Nested Menu")
@@ -24,7 +26,7 @@ public enum EnumTest {
                     new SimpleMenu.SBuilder(3)
                             .title("Child menu 1")
                             .background()
-                            .childButton(4, 1, () ->new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
                                     new SimpleMenu.SBuilder(3)
                                             .title("Child menu 2")
                                             .background()
@@ -85,7 +87,8 @@ public enum EnumTest {
                             .icon(() -> new ItemBuilder(finalMaterial).toItem())
                             .lmb((interact) -> {
                                 interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
-                                        interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
+                                        interact.clickedItem.getType().name().toLowerCase()
+                                                .replaceAll("_", " "));
 
                                 // do nothing else on click
                                 return null;

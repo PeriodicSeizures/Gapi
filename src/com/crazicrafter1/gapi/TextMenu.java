@@ -173,19 +173,7 @@ public class TextMenu extends AbstractMenu {
         }
 
         @Override
-        void validate() {
-            Validate.notNull(buttons.get(SLOT_LEFT));
-            Validate.notNull(buttons.get(SLOT_OUTPUT));
-
-            super.validate();
-        }
-
-        @Override
         public TextMenu open(Player player) {
-            Validate.notNull(player);
-
-            this.validate();
-
             HashMap<Integer, Button> btns = new HashMap<>();
             buttons.forEach((i, b) -> btns.put(i, b.get()));
 

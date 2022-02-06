@@ -34,10 +34,12 @@ public class CmdTestMenu implements CommandExecutor {
         }
 
         try {
-            EnumTest enumTest = EnumTest.valueOf(args[0].toLowerCase(Locale.ROOT));
+            EnumTest enumTest = EnumTest.valueOf(args[0].toUpperCase());
             enumTest.getMenuBuilder().open(p);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             p.sendMessage(ChatColor.RED + "" + Arrays.toString(EnumTest.values()));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return true;

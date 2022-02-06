@@ -173,13 +173,26 @@ public abstract class AbstractMenu {
         public AbstractMenu.Builder parentMenuBuilder;
         Runnable openRunnable;
         BiFunction<Player, Boolean, Result> closeFunction;
-
         boolean recursiveTitle = false;
 
+        /**
+         * Set the const title of the menu
+         *
+         * @param title the title
+         * @return this
+         */
         public Builder title(String title) {
             return this.title(title, this.recursiveTitle);
         }
 
+        /**
+         * Set the const title of the menu, with or without recursive titles
+         * menu -> 2nd menu -> 3rd menu
+         *
+         * @param title the title
+         * @param recursiveTitle use recursive titles
+         * @return this
+         */
         public Builder title(String title, boolean recursiveTitle) {
             Validate.notNull(title);
             this.title = title;
@@ -187,11 +200,23 @@ public abstract class AbstractMenu {
             return this;
         }
 
+        /**
+         * Execute a function on open
+         *
+         * @param openRunnable the runnable
+         * @return this
+         */
         public Builder onOpen(Runnable openRunnable) {
             this.openRunnable = openRunnable;
             return this;
         }
 
+        /**
+         * Execute a function on close
+         *
+         * @param closeFunction the runnable
+         * @return this
+         */
         public Builder onClose(BiFunction<Player, Boolean, Result> closeFunction) {
             Validate.notNull(closeFunction);
             this.closeFunction = closeFunction;
@@ -199,8 +224,9 @@ public abstract class AbstractMenu {
         }
 
         /**
-         * Set the parent MenuBuilder of this MenuBuilder
-         * @param builder parent builder
+         * Set the parent of this menu
+         *
+         * @param builder the parent
          * @return this
          */
         public final Builder parent(Builder builder) {
@@ -231,7 +257,6 @@ public abstract class AbstractMenu {
         }
 
         private static final int CUT_LENGTH = 29;
-
         private String getRecursiveTitle() {
             if (recursiveTitle && this.parentMenuBuilder != null) {
                 String path = parentMenuBuilder.getRecursiveTitle() +
@@ -246,14 +271,16 @@ public abstract class AbstractMenu {
             }
         }
 
-        void validate() {
-            Validate.notNull(title, "must assign a title");
-        }
+        /*
+         * TODO
+         * Include more title options?
+         *
+         */
 
         /**
          * Constructs and opens the {@link AbstractMenu} to the player
-         * @param player player to open to
-         * @return the constructed menu
+         * @param player the player
+         * @return the menu
          */
         public abstract AbstractMenu open(Player player);
     }

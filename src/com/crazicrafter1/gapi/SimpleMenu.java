@@ -1,6 +1,8 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
+import com.crazicrafter1.crutils.ReflectionUtil;
+import com.crazicrafter1.crutils.Util;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -9,9 +11,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public class SimpleMenu extends AbstractMenu {
     private final ItemStack background;
@@ -66,7 +66,12 @@ public class SimpleMenu extends AbstractMenu {
     }
 
     public static class SBuilder extends Builder {
-        private final static ItemStack BACKGROUND_1 = new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name(" ").toItem();
+        private static final ItemStack BACKGROUND_1;
+        static {
+            BACKGROUND_1 = new ItemBuilder(ReflectionUtil.isAtLeastVersion("1_16") ?
+                    new ItemStack(Material.BLACK_STAINED_GLASS_PANE) :
+                    new ItemStack(Material.matchMaterial("STAINED_GLASS_PANE"), 1, (short) 15)).name(" ").toItem();
+        }
 
         ItemStack background;
         private final int columns;
@@ -99,6 +104,7 @@ public class SimpleMenu extends AbstractMenu {
 
         /**
          * Bind a sub menu with LMB as the default button
+         *
          * @param x horizontal position
          * @param y vertical position
          * @param getItemStackFunction button icon
@@ -122,6 +128,31 @@ public class SimpleMenu extends AbstractMenu {
                     .icon(getItemStackFunction)
                     .bind(menuToOpen, EnumPress.LMB)
                     .rmb(rightClickListener));
+        }
+
+        public SBuilder childButton(int x, int y,
+                                    Supplier<ItemStack> getItemStackFunction, Builder builder, Supplier<Boolean> keepCondition) {
+            if (keepCondition.get()) {
+                builder.parent(this);
+
+                return this.bind(x, y, EnumPress.LMB, getItemStackFunction, builder);
+            }
+            return this;
+        }
+
+        public SBuilder childButton(int x, int y,
+                                    Supplier<ItemStack> getItemStackFunction, Builder menuToOpen,
+                                    Function<Button.Interact, Result> rightClickListener, Supplier<Boolean> keepCondition) {
+
+            if (keepCondition.get()) {
+                menuToOpen.parent(this);
+
+                return this.button(x, y, new Button.Builder()
+                        .icon(getItemStackFunction)
+                        .bind(menuToOpen, EnumPress.LMB)
+                        .rmb(rightClickListener));
+            }
+            return this;
         }
 
         public SBuilder button(int x, int y, Button.Builder button) {
