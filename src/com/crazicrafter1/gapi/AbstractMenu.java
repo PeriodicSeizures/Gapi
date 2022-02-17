@@ -165,9 +165,6 @@ public abstract class AbstractMenu {
     }
 
     public static abstract class Builder {
-
-        final static ItemStack PREV_1 = new ItemBuilder(Material.ARROW).name("&cBack").toItem();
-
         String title;
         HashMap<Integer, Button.Builder> buttons = new HashMap<>();
         public AbstractMenu.Builder parentMenuBuilder;

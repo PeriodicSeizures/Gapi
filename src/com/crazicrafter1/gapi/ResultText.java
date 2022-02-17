@@ -20,9 +20,9 @@ class ResultText extends Result {
         Validate.isTrue(menu instanceof TextMenu, "Must be used with text menu");
 
         menu.inventory.setItem(TextMenu.SLOT_LEFT,
-                new ItemBuilder(Objects.requireNonNull(
+                ItemBuilder.copyOf(Objects.requireNonNull(
                         menu.inventory.getItem(TextMenu.SLOT_LEFT)))
-                        .name(text, false).toItem());
+                        .name(text, false).build());
 
 
     }

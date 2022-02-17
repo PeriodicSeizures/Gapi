@@ -15,22 +15,22 @@ public enum EnumTest {
             .title("Simple Menu")
             .background()
             .button(4, 1, new Button.Builder()
-                    .icon(() -> new ItemBuilder(Material.FEATHER).name("&eHello, World!").toItem())
+                    .icon(() -> ItemBuilder.copyOf(Material.FEATHER).name("&eHello, World!").build())
                     .lmb(interact -> Result.MESSAGE("Hello world!"))
             )
     ),
     NESTED(new SimpleMenu.SBuilder(3)
             .title("Test Nested Menu")
             .background()
-            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+            .childButton(4, 1, () -> ItemBuilder.copyOf(Material.FEATHER).name("&8Next menu").build(),
                     new SimpleMenu.SBuilder(3)
                             .title("Child menu 1")
                             .background()
-                            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                            .childButton(4, 1, () -> ItemBuilder.copyOf(Material.FEATHER).name("&8Next menu").build(),
                                     new SimpleMenu.SBuilder(3)
                                             .title("Child menu 2")
                                             .background()
-                                            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                                            .childButton(4, 1, () -> ItemBuilder.copyOf(Material.FEATHER).name("&8Next menu").build(),
                                                     new SimpleMenu.SBuilder(3)
                                                             .title("Child menu 3")
                                                             .background()
@@ -44,7 +44,7 @@ public enum EnumTest {
             .childButton(4, 1, () -> new ItemStack(Material.ANVIL),
                     new TextMenu.TBuilder()
                             .title("Text menu")
-                            .left(() -> "Default text!")
+                            .leftRaw(() -> "Default text!")
                             //.preventClose()
                             .onClose((player, reroute) -> Result.BACK())
                             .onComplete((player, s) -> {
@@ -55,15 +55,15 @@ public enum EnumTest {
     TITLES(                new SimpleMenu.SBuilder(3)
             .title("parent menu", true)
             .background()
-            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+            .childButton(4, 1, () -> ItemBuilder.copyOf(Material.FEATHER).name("&8Next menu").build(),
                     new SimpleMenu.SBuilder(3)
                             .title("child menu 1", true)
                             .background()
-                            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                            .childButton(4, 1, () -> ItemBuilder.copyOf(Material.FEATHER).name("&8Next menu").build(),
                                     new SimpleMenu.SBuilder(3)
                                             .title("child menu 2", true)
                                             .background()
-                                            .childButton(4, 1, () -> new ItemBuilder(Material.FEATHER).name("&8Next menu").toItem(),
+                                            .childButton(4, 1, () -> ItemBuilder.copyOf(Material.FEATHER).name("&8Next menu").build(),
                                                     new SimpleMenu.SBuilder(3)
                                                             .title("child menu 3", true)
                                                             .background()
@@ -84,7 +84,7 @@ public enum EnumTest {
                     }
                     Material finalMaterial = material;
                     result.add(new Button.Builder()
-                            .icon(() -> new ItemBuilder(finalMaterial).toItem())
+                            .icon(() -> ItemBuilder.copyOf(finalMaterial).build())
                             .lmb((interact) -> {
                                 interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
                                         interact.clickedItem.getType().name().toLowerCase()

@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: com.crazicrafter1.gapi.test.C
-Premain-Class: com.crazicrafter1.gapi.test.InstrumentationAgent

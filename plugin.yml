@@ -1,6 +1,6 @@
 name: Gapi
 main: com.crazicrafter1.gapi.Main
-version: 1.0.4 # last: 1.0.3
+version: 1.0.5 # last: 1.0.4
 api-version: 1.13
 softdepend: [CRUtils]
 author: crazicrafter1
@@ -12,6 +12,10 @@ permissions:
   gapi.admin:
     description: Enable Gapi admin
     default: op
+
+# 1.0.5 (2/17/2022)
+# release for lootcrates
+
 
 # 1.0.4 (2/5/2022)
 # 1.12.2 support

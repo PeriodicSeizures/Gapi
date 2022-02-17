@@ -1,6 +1,7 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
+import com.crazicrafter1.crutils.Util;
 import com.sun.istack.internal.Nullable;
 import net.wesjd.anvilgui.version.VersionMatcher;
 import net.wesjd.anvilgui.version.VersionWrapper;
@@ -118,58 +119,62 @@ public class TextMenu extends AbstractMenu {
          * @return The {@link TextMenu.TBuilder} instance
          * @throws IllegalArgumentException if the text is null
          */
-        public TBuilder left(Supplier<String> itemTextFunction) {
-            return this.left(itemTextFunction, null);
+        public TBuilder leftRaw(Supplier<String> itemTextFunction) {
+            return this.leftRaw(itemTextFunction, null);
         }
 
         /**
          * Sets the left item. Will translate color codes
+         * left(...) is deprecated because active color codes in anvil is clunky
          * @param itemTextFunction The supplier text of the item
          * @return The {@link TextMenu.TBuilder} instance
          * @throws IllegalArgumentException if the text is null
          */
-        public TBuilder leftF(Supplier<String> itemTextFunction) {
-            return this.leftF(itemTextFunction, null);
+        @Deprecated
+        public TBuilder left(Supplier<String> itemTextFunction) {
+            return this.left(itemTextFunction, null);
         }
 
+        public TBuilder leftRaw(Supplier<String> itemTextFunction, @Nullable Supplier<String> itemLoreFunction) {
+            Validate.notNull(itemTextFunction);
+            return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
+                    .icon(() -> ItemBuilder.copyOf(Material.IRON_SWORD)
+                            .name(Util.toAlternateColorCodes('&', itemTextFunction.get()), false)
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, false).build()));
+        }
+
+        @Deprecated
         public TBuilder left(Supplier<String> itemTextFunction, @Nullable Supplier<String> itemLoreFunction) {
-            Validate.notNull(itemTextFunction);
-            return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
-                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
-                            .name(itemTextFunction.get(), false)
-                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, false).toItem()));
+            throw new RuntimeException("Do not use this function");
+            //Validate.notNull(itemTextFunction);
+            //return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
+            //        .icon(() -> ItemBuilder.copyOf(Material.IRON_SWORD)
+            //                .name(itemTextFunction.get())
+            //                .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, true).build()));
         }
 
-        public TBuilder leftF(Supplier<String> itemTextFunction, @Nullable Supplier<String> itemLoreFunction) {
-            Validate.notNull(itemTextFunction);
-            return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
-                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
-                            .name(itemTextFunction.get(), true)
-                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, true).toItem()));
+        public TBuilder rightRaw(Supplier<String> itemNameFunction) {
+            return this.rightRaw(itemNameFunction, null);
         }
 
         public TBuilder right(Supplier<String> itemNameFunction) {
             return this.right(itemNameFunction, null);
         }
 
-        public TBuilder rightF(Supplier<String> itemNameFunction) {
-            return this.rightF(itemNameFunction, null);
+        public TBuilder rightRaw(Supplier<String> itemNameFunction, @Nullable Supplier<String> itemLoreFunction) {
+            Validate.notNull(itemNameFunction);
+            return (TBuilder) super.button(SLOT_RIGHT, new Button.Builder()
+                    .icon(() -> ItemBuilder.copyOf(Material.IRON_SWORD)
+                            .name(Util.toAlternateColorCodes('&', itemNameFunction.get()), false)
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, false).build()));
         }
 
         public TBuilder right(Supplier<String> itemNameFunction, @Nullable Supplier<String> itemLoreFunction) {
             Validate.notNull(itemNameFunction);
             return (TBuilder) super.button(SLOT_RIGHT, new Button.Builder()
-                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
-                            .name(itemNameFunction.get(), false)
-                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, false).toItem()));
-        }
-
-        public TBuilder rightF(Supplier<String> itemNameFunction, @Nullable Supplier<String> itemLoreFunction) {
-            Validate.notNull(itemNameFunction);
-            return (TBuilder) super.button(SLOT_RIGHT, new Button.Builder()
-                    .icon(() -> new ItemBuilder(Material.IRON_SWORD)
-                            .name(itemNameFunction.get(), true)
-                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, true).toItem()));
+                    .icon(() -> ItemBuilder.copyOf(Material.IRON_SWORD)
+                            .name(itemNameFunction.get())
+                            .lore(itemLoreFunction != null ? itemLoreFunction.get() : null, true).build()));
         }
 
         @Override

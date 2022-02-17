@@ -66,12 +66,11 @@ public class SimpleMenu extends AbstractMenu {
     }
 
     public static class SBuilder extends Builder {
-        private static final ItemStack BACKGROUND_1;
-        static {
-            BACKGROUND_1 = new ItemBuilder(ReflectionUtil.isAtLeastVersion("1_16") ?
-                    new ItemStack(Material.BLACK_STAINED_GLASS_PANE) :
-                    new ItemStack(Material.matchMaterial("STAINED_GLASS_PANE"), 1, (short) 15)).name(" ").toItem();
-        }
+        final static ItemStack PREV_1 = ItemBuilder.copyOf(Material.ARROW).name("&cBack").build();
+        private static final ItemStack BACKGROUND_1 = ItemBuilder.of("BLACK_STAINED_GLASS_PANE").name(" ").build();
+        //private static final ItemStack BACKGROUND_1 = ItemBuilder.copyOf(ReflectionUtil.isAtLeastVersion("1_16") ?
+        //    new ItemStack(Material.BLACK_STAINED_GLASS_PANE) :
+        //    new ItemStack(Material.matchMaterial("STAINED_GLASS_PANE"), 1, (short) 15)).name(" ").build();
 
         ItemStack background;
         private final int columns;
