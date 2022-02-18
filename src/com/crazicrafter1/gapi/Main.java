@@ -2,6 +2,7 @@ package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.Util;
 import com.crazicrafter1.gapi.test.CmdTestMenu;
+import com.crazicrafter1.innerutils.GithubUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
