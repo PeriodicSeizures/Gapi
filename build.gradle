@@ -1,0 +1,98 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+}
+
+group = project.plugin_group
+archivesBaseName = project.plugin_name
+version = project.plugin_version
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+    maven {
+        name = 'codemc'
+        url = 'https://repo.codemc.io/repository/maven-snapshots/'
+    }
+    maven { url "https://jitpack.io" }
+}
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+dependencies {
+    compileOnly "org.spigotmc:spigot-api:${project.spigot_version}"
+    shadow 'net.wesjd:anvilgui:1.5.3-SNAPSHOT'
+    compileOnly 'com.github.PeriodicSeizures:CRUtils:main-SNAPSHOT'
+}
+
+def targetJavaVersion = 8
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+//https://github.com/johnrengelman/shadow/issues/31#issuecomment-523614593
+
+// output to bin dir instead
+tasks.withType(Jar) {
+    destinationDirectory = file("$rootDir/bin/")
+}
+clean.doLast {
+    file("${rootDir}/bin").deleteDir()
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveFileName = project.plugin_name + " v" + project.plugin_version + ".jar"
+    exclude('META-INF/')
+    exclude('META-INF/**')
+    exclude('**/AnvilGUI$1.class')
+    exclude('**/AnvilGUI$Builder.class')
+    exclude('**/AnvilGUI$ListenUp.class')
+    exclude('**/AnvilGUI$Response.class')
+    exclude('**/AnvilGUI$Slot.class')
+    exclude('**/AnvilGUI.class')
+
+    exclude('META-INF/MANIFEST.MF')
+}
+
+jar {
+    onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+    archiveFileName = project.plugin_name + " v" + project.plugin_version + " " + "unshaded" + ".jar"
+    //exclude('**/META-INF/')
+    exclude('META-INF/**')
+    exclude('META-INF/MANIFEST.MF')
+}
+
+build.dependsOn(shadowJar)
+
+
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}

@@ -97,7 +97,7 @@ new SimpleMenu.SBuilder(1)
         .button(4, 0,
                 new Button.Builder()
                         .icon(() -> new ItemBuilder(Material.IRON_DOOR).name("Unlock menu").toItem())
-                        .lmb(interact -> EnumResult.CLOSE))
+                        .lmb(clickEvent -> EnumResult.CLOSE))
         .open(p);
 break;
 ```
@@ -116,9 +116,9 @@ new ParallaxMenu.PBuilder()
                 Material finalMaterial = material;
                 self.append(new Button.Builder()
                         .icon(() -> new ItemBuilder(finalMaterial).toItem())
-                        .lmb(interact -> {
-                            interact.player.sendMessage(ChatColor.GOLD + "I'm a " +
-                                    interact.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
+                        .lmb(clickEvent -> {
+                            clickEvent.player.sendMessage(ChatColor.GOLD + "I'm a " +
+                                    clickEvent.clickedItem.getType().name().toLowerCase().replaceAll("_", " "));
 
                             // do nothing else on click
                             return EnumResult.OK;
@@ -231,7 +231,7 @@ new SimpleMenu.SBuilder(5)
                                 .parentButton(4, 5)
                                 .validate(),
                                 // RMB event
-                                interact -> {
+                                clickEvent -> {
                                     Main.get().data.lootGroups.remove(entry.getKey());
                                     for (Crate crate : Main.get().data.crates.values()) {
                                         Integer removed = crate.lootByWeight.remove(entry.getValue());

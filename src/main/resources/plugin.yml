@@ -1,0 +1,6 @@
+name: Gapi
+version: ${version}
+main: com.crazicrafter1.gapi.Gapi
+api-version: 1.13
+softdepend: [ CRUtils ]
+authors: [ crazicrafter1 ]
