@@ -16,9 +16,6 @@ public class Main extends JavaPlugin {
         return instance;
     }
 
-    public static boolean debug;
-    public static boolean update;
-
     @Override
     public void onEnable() {
         if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
@@ -30,11 +27,6 @@ public class Main extends JavaPlugin {
         GithubUpdater.autoUpdate(this, "PeriodicSeizures", "Gapi", "Gapi.jar");
 
         instance = this;
-
-        this.saveDefaultConfig();
-
-        debug = getConfig().getBoolean("debug");
-        update = getConfig().getBoolean("update");
 
         new EventListener(this);
         new CmdTestMenu(this);
@@ -62,10 +54,4 @@ public class Main extends JavaPlugin {
     public void error(String s) {
         Bukkit.getConsoleSender().sendMessage(prefix + ChatColor.DARK_RED + s);
     }
-
-    public void debug(String s) {
-        if (debug)
-            Bukkit.getConsoleSender().sendMessage(prefix + ChatColor.GOLD + s);
-    }
-
 }

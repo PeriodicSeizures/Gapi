@@ -1,6 +1,12 @@
 name: Gapi
 version: ${version}
-main: com.crazicrafter1.gapi.Gapi
+main: com.crazicrafter1.gapi.Main
 api-version: 1.13
 softdepend: [ CRUtils ]
 authors: [ crazicrafter1 ]
+commands:
+  testmenu:
+    permission: gapi.admin
+permissions:
+  gapi.admin:
+    default: op
