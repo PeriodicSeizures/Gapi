@@ -23,6 +23,8 @@ public class Main extends JavaPlugin {
     public void onEnable() {
 
         if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
+            getLogger().severe("CRUtils is required");
+            getLogger().severe("Install it from here https://github.com/PeriodicSeizures/CRUtils/releases");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -36,6 +38,8 @@ public class Main extends JavaPlugin {
 
                     Bukkit.getPluginManager().disablePlugin(this);
                     return;
+                } else {
+                    getLogger().info("Using the latest version");
                 }
             } catch (IOException e) {
                 getLogger().warning("Error while updating");
