@@ -63,7 +63,7 @@ clean.doLast {
 
 shadowJar {
     configurations = [project.configurations.shadow]
-    archiveFileName = project.plugin_name + " v" + project.plugin_version + ".jar"
+    archiveFileName = project.plugin_name + ".jar"
     exclude('META-INF/')
     exclude('META-INF/**')
     exclude('**/AnvilGUI$1.class')
@@ -78,10 +78,7 @@ shadowJar {
 
 jar {
     onlyIf { !sourceSets.main.allSource.files.isEmpty() }
-    archiveFileName = project.plugin_name + " v" + project.plugin_version + " " + "unshaded" + ".jar"
-    //exclude('**/META-INF/')
-    exclude('META-INF/**')
-    exclude('META-INF/MANIFEST.MF')
+    archiveFileName = project.plugin_name + ".jar"
 }
 
 build.dependsOn(shadowJar)

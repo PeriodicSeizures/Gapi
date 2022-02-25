@@ -1,10 +1,13 @@
 package com.crazicrafter1.gapi;
 
-import com.crazicrafter1.crutils.GithubUpdater;
+import com.crazicrafter1.crutils.GitUtils;
 import com.crazicrafter1.gapi.test.CmdTestMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.io.IOException;
 
 public class Main extends JavaPlugin {
 
@@ -18,15 +21,29 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
         if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
-            error(ChatColor.RED + "Required plugin CRUtils not found");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
 
-        GithubUpdater.autoUpdate(this, "PeriodicSeizures", "Gapi", "Gapi.jar");
+        getDataFolder().mkdirs();
+        File noUpdateFile = new File(getDataFolder(), "NO_UPDATE.txt");
+        if (!(noUpdateFile.exists() && noUpdateFile.isFile())) try {
+                StringBuilder outTag = new StringBuilder();
+                if (GitUtils.updatePlugin(this, "PeriodicSeizures", "Gapi", "Gapi.jar", outTag)) {
+                    getLogger().warning("Updated to " + outTag + "; restart server to use");
 
-        instance = this;
+                    Bukkit.getPluginManager().disablePlugin(this);
+                    return;
+                }
+            } catch (IOException e) {
+                getLogger().warning("Error while updating");
+                e.printStackTrace();
+            }
+        else getLogger().warning("Updating is disabled (delete " + noUpdateFile.getName() + " to enable)");
+
+        Main.instance = this;
 
         new EventListener(this);
         new CmdTestMenu(this);
