@@ -24,7 +24,7 @@ public class Main extends JavaPlugin {
 
         if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
             getLogger().severe("CRUtils is required");
-            getLogger().severe("Install it from here https://github.com/PeriodicSeizures/CRUtils/releases");
+            getLogger().severe("Install it from here " + ChatColor.UNDERLINE + "https://github.com/PeriodicSeizures/CRUtils/releases");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -45,7 +45,10 @@ public class Main extends JavaPlugin {
                 getLogger().warning("Error while updating");
                 e.printStackTrace();
             }
-        else getLogger().warning("Updating is disabled (delete " + noUpdateFile.getName() + " to enable)");
+        else {
+            getLogger().warning("Updating is disabled (delete " + noUpdateFile.getName() + " to enable)");
+            GitUtils.checkForUpdateAsync(this, "PeriodicSeizures", "Gapi", (result, tag) -> getLogger().warning("Update " + tag + " is available"));
+        }
 
         Main.instance = this;
 
