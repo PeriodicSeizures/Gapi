@@ -53,13 +53,17 @@ tasks.withType(JavaCompile).configureEach {
 
 //https://github.com/johnrengelman/shadow/issues/31#issuecomment-523614593
 
-// output to bin dir instead
 tasks.withType(Jar) {
-    destinationDirectory = file("$rootDir/bin/")
+    destinationDirectory = file("C:\\Users\\Rico\\Documents\\MinecraftDev\\servers\\1.12.2\\plugins\\")
 }
-clean.doLast {
-    file("${rootDir}/bin").deleteDir()
-}
+
+// output to bin dir instead
+//tasks.withType(Jar) {
+//    destinationDirectory = file("$rootDir/bin/")
+//}
+//clean.doLast {
+//    file("${rootDir}/bin").deleteDir()
+//}
 
 shadowJar {
     configurations = [project.configurations.shadow]
