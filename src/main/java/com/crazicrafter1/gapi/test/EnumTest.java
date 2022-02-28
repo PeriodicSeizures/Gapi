@@ -116,7 +116,7 @@ public enum EnumTest {
 
             JsonArray json = JsonParser.parseReader(new InputStreamReader(con.getInputStream())).getAsJsonArray();
             json.forEach(e -> buttons.add(
-                    new Button.Builder().icon(p1 -> ItemBuilder.of("PLAYER_HEAD").name(e.getAsJsonObject().get("name").getAsString())
+                    new Button.Builder().icon(p1 -> ItemBuilder.fromModernMaterial("PLAYER_HEAD").name(e.getAsJsonObject().get("name").getAsString())
                             .skull(e.getAsJsonObject().get("value").getAsString()).build()).lmb(interact -> Result.GRAB()).get())
             );
         } catch (Exception e) {
