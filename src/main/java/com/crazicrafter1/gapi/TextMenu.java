@@ -125,29 +125,37 @@ public class TextMenu extends AbstractMenu {
          * @throws IllegalArgumentException if the text is null
          */
         public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction) {
-            return this.leftRaw(itemTextFunction, null, ColorMode.STRIP);
+            return this.leftRaw(itemTextFunction, ColorMode.STRIP_RENDERED, null, ColorMode.RENDER_MARKERS);
         }
 
-        public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction, @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorMode nameColorMode) {
-            Validate.notNull(itemTextFunction);
-            Validate.isTrue(nameColorMode == ColorMode.STRIP || nameColorMode == ColorMode.INVERT, "ColorMode must be STRIP or INVERT");
+        public TBuilder leftRaw(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorMode nameColorMode, @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorMode loreColorMode) {
+            Validate.notNull(itemNameFunction);
+            Validate.isTrue(nameColorMode == ColorMode.STRIP_RENDERED || nameColorMode == ColorMode.INVERT_RENDERED, "ColorMode must be STRIP or INVERT");
 
             return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
                     .icon((p) -> ItemBuilder.copyOf(Material.IRON_SWORD)
-                            .name(Objects.requireNonNull(itemTextFunction.apply(p), "MenuBuilder incomplete; assign a name function"), nameColorMode)
-                            .lore(itemLoreFunction != null ? itemLoreFunction.apply(p) : null).build()));
+                            .name(Objects.requireNonNull(itemNameFunction.apply(p), "Name function returns null"), nameColorMode)
+                            .lore(itemLoreFunction != null ? Objects.requireNonNull(itemLoreFunction.apply(p), "Lore function returns null") : null, loreColorMode).build()));
         }
 
         public TBuilder right(@Nonnull Function<Player, String> itemNameFunction) {
-            return this.right(itemNameFunction, null);
+            return this.right(itemNameFunction, ColorMode.RENDER_MARKERS);
+        }
+
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorMode nameColorMode) {
+            return this.right(itemNameFunction, nameColorMode, null, ColorMode.RENDER_MARKERS);
         }
 
         public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nullable Function<Player, String> itemLoreFunction) {
+            return this.right(itemNameFunction, ColorMode.RENDER_MARKERS, itemLoreFunction, ColorMode.RENDER_MARKERS);
+        }
+
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorMode nameColorMode, @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorMode loreColorMode) {
             Validate.notNull(itemNameFunction);
             return (TBuilder) super.button(SLOT_RIGHT, new Button.Builder()
                     .icon((p) -> ItemBuilder.copyOf(Material.IRON_SWORD)
-                            .name(itemNameFunction.apply(p))
-                            .lore(itemLoreFunction != null ? itemLoreFunction.apply(p) : null).build()));
+                            .name(Objects.requireNonNull(itemNameFunction.apply(p), "Name function returns null"), nameColorMode)
+                            .lore(itemLoreFunction != null ? Objects.requireNonNull(itemLoreFunction.apply(p), "Lore function returns null") : null, loreColorMode).build()));
         }
 
         @Override

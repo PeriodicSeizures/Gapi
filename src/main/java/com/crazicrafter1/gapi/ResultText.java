@@ -22,7 +22,7 @@ class ResultText extends Result {
         menu.inventory.setItem(TextMenu.SLOT_LEFT,
                 ItemBuilder.copyOf(Objects.requireNonNull(
                         menu.inventory.getItem(TextMenu.SLOT_LEFT)))
-                        .name(text, ColorMode.STRIP).build());
+                        .name(text, ColorMode.STRIP_RENDERED).build());
 
 
     }
