@@ -3,6 +3,7 @@ package com.crazicrafter1.gapi;
 import com.crazicrafter1.crutils.ColorMode;
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.TriFunction;
+import com.crazicrafter1.crutils.Util;
 import net.wesjd.anvilgui.version.VersionMatcher;
 import net.wesjd.anvilgui.version.VersionWrapper;
 import org.apache.commons.lang.Validate;
@@ -112,7 +113,7 @@ public class TextMenu extends AbstractMenu {
         public TBuilder onComplete(@Nonnull TriFunction<Player, String, TBuilder, Result> completeFunction) {
             return (TBuilder) this.button(SLOT_OUTPUT, new Button.Builder()
                     .lmb((interact) -> completeFunction.apply(interact.player,
-                            interact.clickedItem.hasItemMeta() ? interact.clickedItem.getItemMeta().getDisplayName() : "", (TBuilder) interact.menuBuilder))
+                            Util.strDef(ItemBuilder.mutable(interact.clickedItem).getName(), ""), (TBuilder) interact.menuBuilder))
             );
         }
 
@@ -129,11 +130,11 @@ public class TextMenu extends AbstractMenu {
 
         public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction, @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorMode nameColorMode) {
             Validate.notNull(itemTextFunction);
-            Validate.isTrue(nameColorMode == ColorMode.STRIP || nameColorMode == ColorMode.REVERT, "ColorMode must be STRIP or REVERT");
+            Validate.isTrue(nameColorMode == ColorMode.STRIP || nameColorMode == ColorMode.INVERT, "ColorMode must be STRIP or INVERT");
 
             return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
                     .icon((p) -> ItemBuilder.copyOf(Material.IRON_SWORD)
-                            .name(Objects.requireNonNull(itemTextFunction.apply(p), "Bad design; name must not be null"), nameColorMode)
+                            .name(Objects.requireNonNull(itemTextFunction.apply(p), "MenuBuilder incomplete; assign a name function"), nameColorMode)
                             .lore(itemLoreFunction != null ? itemLoreFunction.apply(p) : null).build()));
         }
 

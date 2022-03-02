@@ -16,6 +16,8 @@ import java.util.function.Function;
 
 public final class ParallaxMenu extends SimpleMenu {
 
+    //todo add a customizable area size for this menu
+
     private static final int ITEM_X = 1;
     private static final int ITEM_Y = 1;
     private static final int ITEM_W = 7;
@@ -28,10 +30,10 @@ public final class ParallaxMenu extends SimpleMenu {
     private int page = 1;
 
     private final BiFunction<PBuilder, Player, List<Button>> orderedButtonsFunc;
-    private boolean async;
+    private final boolean async;
 
     private List<Button> orderedButtons = new ArrayList<>();
-    public List<Button> subset = new ArrayList<>();
+    //public List<Button> subset = new ArrayList<>();
 
     private ParallaxMenu(Player player,
                          Function<Player, String> getTitleFunction,
@@ -56,8 +58,6 @@ public final class ParallaxMenu extends SimpleMenu {
      */
     @Override
     void openInventory(boolean sendOpenPacket) {
-        //this.inventory = Bukkit.createInventory(null, 6*9, inventoryTitle);
-
         if (async) {
             new BukkitRunnable() {
                 @Override
