@@ -113,7 +113,7 @@ public class TextMenu extends AbstractMenu {
         public TBuilder onComplete(@Nonnull TriFunction<Player, String, TBuilder, Result> completeFunction) {
             return (TBuilder) this.button(SLOT_OUTPUT, new Button.Builder()
                     .lmb((interact) -> completeFunction.apply(interact.player,
-                            Util.strDef(ItemBuilder.mutable(interact.clickedItem).getName(), ""), (TBuilder) interact.menuBuilder))
+                            Util.def(ItemBuilder.mutable(interact.clickedItem).getName(), ""), (TBuilder) interact.menuBuilder))
             );
         }
 
