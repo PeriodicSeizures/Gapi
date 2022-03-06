@@ -1,6 +1,8 @@
 package com.crazicrafter1.gapi.test;
 
 import com.crazicrafter1.crutils.ItemBuilder;
+import com.crazicrafter1.crutils.MathUtil;
+import com.crazicrafter1.crutils.ProbabilityUtil;
 import com.crazicrafter1.crutils.Util;
 import com.crazicrafter1.gapi.*;
 import com.google.gson.JsonArray;
@@ -83,9 +85,9 @@ public enum EnumTest {
                 ArrayList<Button> result = new ArrayList<>();
                 Material values[] = Material.values();
                 for (int i = 0; i < 59; i++) {
-                    Material material = values[Util.randomRange(0, values.length - 1)];
+                    Material material = values[ProbabilityUtil.randomRange(0, values.length - 1)];
                     while (!material.isItem()) {
-                        material = values[Util.randomRange(0, values.length - 1)];
+                        material = values[ProbabilityUtil.randomRange(0, values.length - 1)];
                     }
                     Material finalMaterial = material;
                     result.add(new Button.Builder()

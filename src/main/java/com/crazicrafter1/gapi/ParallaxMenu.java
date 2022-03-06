@@ -1,6 +1,7 @@
 package com.crazicrafter1.gapi;
 
 import com.crazicrafter1.crutils.ItemBuilder;
+import com.crazicrafter1.crutils.MathUtil;
 import com.crazicrafter1.crutils.Util;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
@@ -119,8 +120,8 @@ public final class ParallaxMenu extends SimpleMenu {
         final int size = orderedButtons.size();
 
         int startIndex = (page-1) * SIZE;
-        final int endIndex = Util.clamp(
-                startIndex + Util.clamp(size - startIndex, 0, SIZE),
+        final int endIndex = MathUtil.clamp(
+                startIndex + MathUtil.clamp(size - startIndex, 0, SIZE),
                 0, size-1);
 
         for (int y = ITEM_Y; y < ITEM_Y2 + 1; y++) {

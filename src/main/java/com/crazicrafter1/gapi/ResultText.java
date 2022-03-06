@@ -1,6 +1,6 @@
 package com.crazicrafter1.gapi;
 
-import com.crazicrafter1.crutils.ColorMode;
+import com.crazicrafter1.crutils.ColorUtil;
 import com.crazicrafter1.crutils.ItemBuilder;
 import org.apache.commons.lang.Validate;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -22,7 +22,7 @@ class ResultText extends Result {
         menu.inventory.setItem(TextMenu.SLOT_LEFT,
                 ItemBuilder.copyOf(Objects.requireNonNull(
                         menu.inventory.getItem(TextMenu.SLOT_LEFT)))
-                        .name(text, ColorMode.STRIP_RENDERED).build());
+                        .name(text, ColorUtil.STRIP_RENDERED).build());
 
 
     }

@@ -1,6 +1,6 @@
 package com.crazicrafter1.gapi;
 
-import com.crazicrafter1.crutils.ColorMode;
+import com.crazicrafter1.crutils.ColorUtil;
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.TriFunction;
 import com.crazicrafter1.crutils.Util;
@@ -117,6 +117,8 @@ public class TextMenu extends AbstractMenu {
             );
         }
 
+
+
         /**
          * Set left item text. Defaults to ColorMode.STRIP
          *
@@ -125,33 +127,71 @@ public class TextMenu extends AbstractMenu {
          * @throws IllegalArgumentException if the text is null
          */
         public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction) {
-            return this.leftRaw(itemTextFunction, ColorMode.STRIP_RENDERED, null, ColorMode.RENDER_MARKERS);
+            return this.leftRaw(itemTextFunction, ColorUtil.INVERT_RENDERED, null, ColorUtil.RENDER_ALL);
         }
 
-        public TBuilder leftRaw(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorMode nameColorMode, @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorMode loreColorMode) {
-            Validate.notNull(itemNameFunction);
-            Validate.isTrue(nameColorMode == ColorMode.STRIP_RENDERED || nameColorMode == ColorMode.INVERT_RENDERED, "ColorMode must be STRIP or INVERT");
+        public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction,
+                                @Nullable Function<Player, String> itemLoreFunction) {
+            return this.leftRaw(itemTextFunction, ColorUtil.INVERT_RENDERED, itemLoreFunction, ColorUtil.RENDER_ALL);
+        }
+
+        public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction,
+                                @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorUtil loreColorMode) {
+            return this.leftRaw(itemTextFunction, ColorUtil.INVERT_RENDERED, itemLoreFunction, loreColorMode);
+        }
+
+        public TBuilder leftRaw(@Nonnull Function<Player, String> itemTextFunction, ColorUtil nameColorMode) {
+            return this.leftRaw(itemTextFunction, nameColorMode, null, ColorUtil.RENDER_MARKERS);
+        }
+
+        public TBuilder leftRaw(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorUtil nameColorMode,
+                                @Nullable Function<Player, String> itemLoreFunction) {
+            return leftRaw(itemNameFunction, nameColorMode, itemLoreFunction, ColorUtil.RENDER_MARKERS);
+        }
+
+        public TBuilder leftRaw(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorUtil nameColorMode,
+                                @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorUtil loreColorMode) {
+            Validate.notNull(itemNameFunction, "itemNameFunction must not be null");
+            Validate.notNull(nameColorMode, "nameColorMode must not be null");
+            Validate.isTrue(nameColorMode == ColorUtil.STRIP_RENDERED || nameColorMode == ColorUtil.INVERT_RENDERED, "nameColorMode must be STRIP_RENDERED or INVERT_RENDERED");
+            Validate.notNull(loreColorMode, "loreColorMode must not be null");
 
             return (TBuilder) this.button(SLOT_LEFT, new Button.Builder()
                     .icon((p) -> ItemBuilder.copyOf(Material.IRON_SWORD)
-                            .name(Objects.requireNonNull(itemNameFunction.apply(p), "Name function returns null"), nameColorMode)
-                            .lore(itemLoreFunction != null ? Objects.requireNonNull(itemLoreFunction.apply(p), "Lore function returns null") : null, loreColorMode).build()));
+                            .name(Objects.requireNonNull(itemNameFunction.apply(p), "itemNameFunction must not return null"), nameColorMode)
+                            .lore(itemLoreFunction != null ? Objects.requireNonNull(itemLoreFunction.apply(p), "itemLoreFunction must not return null") : null, loreColorMode).build()));
         }
+
+
 
         public TBuilder right(@Nonnull Function<Player, String> itemNameFunction) {
-            return this.right(itemNameFunction, ColorMode.RENDER_MARKERS);
+            return this.right(itemNameFunction, ColorUtil.RENDER_ALL, null, ColorUtil.RENDER_ALL);
         }
 
-        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorMode nameColorMode) {
-            return this.right(itemNameFunction, nameColorMode, null, ColorMode.RENDER_MARKERS);
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction,
+                              @Nullable Function<Player, String> itemLoreFunction) {
+            return this.right(itemNameFunction, ColorUtil.RENDER_ALL, itemLoreFunction, ColorUtil.RENDER_ALL);
         }
 
-        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nullable Function<Player, String> itemLoreFunction) {
-            return this.right(itemNameFunction, ColorMode.RENDER_MARKERS, itemLoreFunction, ColorMode.RENDER_MARKERS);
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction,
+                              @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorUtil loreColorMode) {
+            return this.right(itemNameFunction, ColorUtil.RENDER_ALL, itemLoreFunction, loreColorMode);
         }
 
-        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorMode nameColorMode, @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorMode loreColorMode) {
-            Validate.notNull(itemNameFunction);
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorUtil nameColorMode) {
+            return this.right(itemNameFunction, nameColorMode, null, ColorUtil.RENDER_ALL);
+        }
+
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorUtil nameColorMode,
+                              @Nullable Function<Player, String> itemLoreFunction) {
+            return this.right(itemNameFunction, nameColorMode, itemLoreFunction, ColorUtil.RENDER_ALL);
+        }
+
+        public TBuilder right(@Nonnull Function<Player, String> itemNameFunction, @Nonnull ColorUtil nameColorMode,
+                              @Nullable Function<Player, String> itemLoreFunction, @Nonnull ColorUtil loreColorMode) {
+            Validate.notNull(itemNameFunction, "itemNameFunction must not be null");
+            Validate.notNull(nameColorMode, "nameColorMode must not be null");
+            Validate.notNull(loreColorMode, "loreColorMode must not be null");
             return (TBuilder) super.button(SLOT_RIGHT, new Button.Builder()
                     .icon((p) -> ItemBuilder.copyOf(Material.IRON_SWORD)
                             .name(Objects.requireNonNull(itemNameFunction.apply(p), "Name function returns null"), nameColorMode)
