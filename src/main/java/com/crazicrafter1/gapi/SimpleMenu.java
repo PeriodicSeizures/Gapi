@@ -1,5 +1,6 @@
 package com.crazicrafter1.gapi;
 
+import com.crazicrafter1.crutils.ColorUtil;
 import com.crazicrafter1.crutils.ItemBuilder;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -85,6 +86,11 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         @Override
+        public SBuilder title(Function<Player, String> getTitleFunction, ColorUtil titleColorMode) {
+            return (SBuilder) super.title(getTitleFunction, titleColorMode);
+        }
+
+        @Override
         public SBuilder onOpen(Runnable openRunnable) {
             return (SBuilder) super.onOpen(openRunnable);
         }
@@ -145,12 +151,7 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         public SBuilder button(int x, int y, Button.Builder button) {
-            Validate.isTrue(x >= 0, "x must be greater or equal to 0 (" + x + ")");
-            Validate.isTrue(x <= 8, "x must be less or equal to 8 (" + x + ")");
-            Validate.isTrue(y >= 0, "y must be greater or equal to 0 (" + y + ")");
-            Validate.isTrue(y < columns, "y must be less than columns " + columns + " (" + y + ")");
-
-            return (SBuilder) super.button(y*9 + x, button);
+            return (SBuilder) super.button(slotOf(x, y), button);
         }
 
         public SBuilder background() {
@@ -175,7 +176,7 @@ public class SimpleMenu extends AbstractMenu {
             Validate.isTrue(y >= 0, "y must be greater or equal to 0 (" + y + ")");
             Validate.isTrue(y < columns, "y must be less than columns " + columns + " (" + y + ")");
 
-            return button(x, y, new Button.Builder()
+            return this.button(x, y, new Button.Builder()
                     .icon(getItemStackFunction)
                     .lmb((clickEvent) -> Result.PARENT()));
         }
@@ -200,7 +201,19 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         final Button.Builder getOrMakeButton(int x, int y, Function<Player, ItemStack> getItemStackFunction) {
-            return super.getOrMakeButton(y*9 + x, getItemStackFunction);
+            return super.getOrMakeButton(slotOf(x, y), getItemStackFunction);
+        }
+
+        // Get pitch
+        // Also performs auxiliary check
+        protected int slotOf(int x, int y) {
+            // assert things here
+            Validate.isTrue(x >= 0, "x must be x>=0 (" + x + ")");
+            Validate.isTrue(x <= 8, "x must be x<=8 (" + x + ")");
+            Validate.isTrue(y >= 0, "y must be y>=0 (" + y + ")");
+            Validate.isTrue(y < columns, "y must be y<col col:" + columns + " (" + y + ")");
+
+            return y*9 + x;
         }
 
         public SimpleMenu open(Player player) {

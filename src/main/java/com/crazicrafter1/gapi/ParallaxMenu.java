@@ -1,5 +1,6 @@
 package com.crazicrafter1.gapi;
 
+import com.crazicrafter1.crutils.ColorUtil;
 import com.crazicrafter1.crutils.ItemBuilder;
 import com.crazicrafter1.crutils.MathUtil;
 import com.crazicrafter1.crutils.Util;
@@ -198,6 +199,11 @@ public final class ParallaxMenu extends SimpleMenu {
         @Override
         public PBuilder title(Function<Player, String> getTitleFunction) {
             return (PBuilder) super.title(getTitleFunction);
+        }
+
+        @Override
+        public PBuilder title(Function<Player, String> getTitleFunction, ColorUtil titleColorMode) {
+            return (PBuilder) super.title(getTitleFunction, titleColorMode);
         }
 
         @Override

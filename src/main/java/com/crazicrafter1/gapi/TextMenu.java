@@ -96,6 +96,11 @@ public class TextMenu extends AbstractMenu {
         }
 
         @Override
+        public TBuilder title(Function<Player, String> getTitleFunction, ColorUtil titleColorMode) {
+            return (TBuilder) super.title(getTitleFunction, titleColorMode);
+        }
+
+        @Override
         public TBuilder onOpen(@Nonnull Runnable openRunnable) {
             return (TBuilder) super.onOpen(openRunnable);
         }

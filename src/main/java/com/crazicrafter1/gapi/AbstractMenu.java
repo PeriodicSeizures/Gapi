@@ -1,5 +1,6 @@
 package com.crazicrafter1.gapi;
 
+import com.crazicrafter1.crutils.ColorUtil;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,6 +11,8 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -173,8 +176,12 @@ public abstract class AbstractMenu {
         BiFunction<Player, Boolean, Result> closeFunction;
 
         public Builder title(Function<Player, String> getTitleFunction) {
+            return this.title(getTitleFunction, ColorUtil.RENDER_ALL);
+        }
+
+        public Builder title(Function<Player, String> getTitleFunction, ColorUtil titleColorMode) {
             Validate.notNull(getTitleFunction);
-            this.getTitleFunction = getTitleFunction;
+            this.getTitleFunction = p -> titleColorMode.a(getTitleFunction.apply(p));
             return this;
         }
 
@@ -227,45 +234,26 @@ public abstract class AbstractMenu {
         }
 
         final Builder button(int slot, Button.Builder button) {
+            return button(slot, button, null);
+        }
+
+        final Builder button(int slot, Button.Builder button, @Nullable Button.Builder[] resOld) {
             Validate.notNull(button);
-            buttons.put(slot, button);
+            Button.Builder b = buttons.putIfAbsent(slot, button);
+            if (resOld != null) resOld[0] = b;
             return this;
         }
 
+        @Nonnull
         final Button.Builder getOrMakeButton(int slot, Function<Player, ItemStack> getItemStackFunction) {
-            Button.Builder button = buttons.putIfAbsent(slot, new Button.Builder().icon(getItemStackFunction));
+            Button.Builder[] old = new Button.Builder[1];
+            button(slot, new Button.Builder().icon(getItemStackFunction), old);
 
-            if (button == null)
-                button = buttons.get(slot);
+            if (old[0] == null)
+                old[0] = buttons.get(slot);
 
-            return button;
+            return old[0];
         }
-
-        //final String getTitle() {
-        //    return ChatColor.DARK_GRAY + (getRecursiveTitle()
-        //            .replace("> ",
-        //                    ChatColor.GRAY + "> " + ChatColor.DARK_GRAY));
-        //}
-
-        //private static final int CUT_LENGTH = 29;
-        //private String getRecursiveTitle() {
-        //    if (recursiveTitle && this.parentMenuBuilder != null) {
-        //        String path = parentMenuBuilder.getRecursiveTitle() +
-        //                " > " + this.title;
-        //        if (path.length() > CUT_LENGTH) {
-        //            return "..." + path.substring(path.length() - CUT_LENGTH);
-        //        }
-        //        return path;
-        //    } else {
-        //        return this.title;
-        //    }
-        //}
-
-        /*
-         * TODO
-         * Include more title options?
-         *
-         */
 
         /**
          * Constructs and opens the {@link AbstractMenu} to the player
