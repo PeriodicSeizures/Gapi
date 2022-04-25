@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class SimpleMenu extends AbstractMenu {
@@ -20,12 +21,12 @@ public class SimpleMenu extends AbstractMenu {
     SimpleMenu(Player player,
                Function<Player, String> getTitleFunction,
                HashMap<Integer, Button> buttons,
-               Runnable openRunnable,
+               Consumer<Player> openFunction,
                BiFunction<Player, Boolean, Result> closeFunction,
                Builder thisBuilder,
                ItemStack background,
                int columns) {
-        super(player, getTitleFunction, buttons, openRunnable, closeFunction, thisBuilder);
+        super(player, getTitleFunction, buttons, openFunction, closeFunction, thisBuilder);
         this.background = background;
         this.columns = columns;
     }
@@ -46,8 +47,8 @@ public class SimpleMenu extends AbstractMenu {
 
     @Override
     void openInventory(boolean sendOpenPacket) {
-        if (openRunnable != null) {
-            openRunnable.run();
+        if (openFunction != null) {
+            openFunction.accept(player);
         }
 
         if (sendOpenPacket) {
@@ -67,9 +68,6 @@ public class SimpleMenu extends AbstractMenu {
     public static class SBuilder extends Builder {
         final static ItemStack PREV_1 = ItemBuilder.copyOf(Material.ARROW).name("&cBack").build();
         private static final ItemStack BACKGROUND_1 = ItemBuilder.fromModernMaterial("BLACK_STAINED_GLASS_PANE").name(" ").build();
-        //private static final ItemStack BACKGROUND_1 = ItemBuilder.copyOf(ReflectionUtil.isAtLeastVersion("1_16") ?
-        //    new ItemStack(Material.BLACK_STAINED_GLASS_PANE) :
-        //    new ItemStack(Material.matchMaterial("STAINED_GLASS_PANE"), 1, (short) 15)).name(" ").build();
 
         ItemStack background;
         private final int columns;
@@ -91,8 +89,8 @@ public class SimpleMenu extends AbstractMenu {
         }
 
         @Override
-        public SBuilder onOpen(Runnable openRunnable) {
-            return (SBuilder) super.onOpen(openRunnable);
+        public SBuilder onOpen(Consumer<Player> openFunction) {
+            return (SBuilder) super.onOpen(openFunction);
         }
 
         @Override
@@ -223,7 +221,7 @@ public class SimpleMenu extends AbstractMenu {
             SimpleMenu menu = new SimpleMenu(player,
                                              getTitleFunction,
                                              btns,
-                                             openRunnable,
+                                             openFunction,
                                              closeFunction,
                                              this,
                                              background,

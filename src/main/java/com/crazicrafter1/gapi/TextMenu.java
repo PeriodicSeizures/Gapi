@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class TextMenu extends AbstractMenu {
@@ -32,18 +33,18 @@ public class TextMenu extends AbstractMenu {
     private TextMenu(Player player,
                      Function<Player, String> getTitleFunction,
                      HashMap<Integer, Button> buttons,
-                     Runnable openRunnable,
+                     Consumer<Player> openFunction,
                      BiFunction<Player, Boolean, Result> closeFunction,
                      Builder builder
 
     ) {
-        super(player, getTitleFunction, buttons, openRunnable, closeFunction, builder);
+        super(player, getTitleFunction, buttons, openFunction, closeFunction, builder);
     }
 
     @Override
     void openInventory(boolean sendOpenPacket) {
-        if (openRunnable != null)
-            openRunnable.run();
+        if (openFunction != null)
+            openFunction.accept(player);
 
         WRAPPER.handleInventoryCloseEvent(player);
         WRAPPER.setActiveContainerDefault(player);
@@ -101,8 +102,8 @@ public class TextMenu extends AbstractMenu {
         }
 
         @Override
-        public TBuilder onOpen(@Nonnull Runnable openRunnable) {
-            return (TBuilder) super.onOpen(openRunnable);
+        public TBuilder onOpen(@Nonnull Consumer<Player> openFunction) {
+            return (TBuilder) super.onOpen(openFunction);
         }
 
         @Override
@@ -208,10 +209,13 @@ public class TextMenu extends AbstractMenu {
             HashMap<Integer, Button> btns = new HashMap<>();
             buttons.forEach((i, b) -> btns.put(i, b.get()));
 
+            // validate slots were assigned
+            Validate.isTrue(buttons.containsKey(SLOT_LEFT), "Must assign left item to text menu");
+
             TextMenu textMenu = new TextMenu(player,
                                              getTitleFunction,
                                              btns,
-                                             openRunnable,
+                                             openFunction,
                                              closeFunction,
                                              this);
 

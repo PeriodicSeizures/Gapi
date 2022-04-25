@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractMenu {
@@ -35,7 +36,7 @@ public abstract class AbstractMenu {
 
     final Function<Player, String> getTitleFunction;
     final HashMap<Integer, Button> buttons;
-    final Runnable openRunnable;
+    final Consumer<Player> openFunction;
     final BiFunction<Player, Boolean, Result> closeFunction;
     final Builder builder;
 
@@ -45,7 +46,7 @@ public abstract class AbstractMenu {
     AbstractMenu(Player player,
                  Function<Player, String> getTitleFunction,
                  HashMap<Integer, Button> buttons,
-                 Runnable openRunnable,
+                 Consumer<Player> openFunction,
                  BiFunction<Player, Boolean, Result> closeFunction,
                  Builder builder
     ) {
@@ -57,7 +58,7 @@ public abstract class AbstractMenu {
 
         this.getTitleFunction = getTitleFunction;
         this.buttons = buttons;
-        this.openRunnable = openRunnable;
+        this.openFunction = openFunction;
         this.closeFunction = closeFunction;
         this.builder = builder;
     }
@@ -172,8 +173,13 @@ public abstract class AbstractMenu {
         Function<Player, String> getTitleFunction;
         HashMap<Integer, Button.Builder> buttons = new HashMap<>();
         public Builder parentMenuBuilder;
-        Runnable openRunnable;
+        Consumer<Player> openFunction;
+
         BiFunction<Player, Boolean, Result> closeFunction;
+
+        public Builder title(String staticTitle) {
+            return this.title(p -> staticTitle);
+        }
 
         public Builder title(Function<Player, String> getTitleFunction) {
             return this.title(getTitleFunction, ColorUtil.RENDER_ALL);
@@ -188,11 +194,11 @@ public abstract class AbstractMenu {
         /**
          * Execute a function on open
          *
-         * @param openRunnable the runnable
+         * @param openFunction the open function
          * @return this
          */
-        public Builder onOpen(Runnable openRunnable) {
-            this.openRunnable = openRunnable;
+        public Builder onOpen(Consumer<Player> openFunction) {
+            this.openFunction = openFunction;
             return this;
         }
 
@@ -209,15 +215,14 @@ public abstract class AbstractMenu {
             return this;
         }
 
-        /**
-         * Execute a function on close
-         *
-         * @param closeFunction the runnable
-         * @return this
-         */
         public Builder onClose(Function<Player, Result> closeFunction) {
             Validate.notNull(closeFunction);
             this.closeFunction = (p, request) -> closeFunction.apply(p);
+            return this;
+        }
+
+        public Builder parentOnClose() {
+            onClose(p -> Result.PARENT());
             return this;
         }
 
@@ -227,16 +232,19 @@ public abstract class AbstractMenu {
          * @param builder the parent
          * @return this
          */
+        /// fixme too tacky open-ended usage
         public final Builder parent(Builder builder) {
             Validate.notNull(builder);
             parentMenuBuilder = builder;
             return this;
         }
 
+        /// fixme too tacky open-ended usage
         final Builder button(int slot, Button.Builder button) {
             return button(slot, button, null);
         }
 
+        /// fixme too tacky open-ended usage
         final Builder button(int slot, Button.Builder button, @Nullable Button.Builder[] resOld) {
             Validate.notNull(button);
             Button.Builder b = buttons.putIfAbsent(slot, button);
@@ -244,6 +252,7 @@ public abstract class AbstractMenu {
             return this;
         }
 
+        /// fixme too tacky open-ended usage
         @Nonnull
         final Button.Builder getOrMakeButton(int slot, Function<Player, ItemStack> getItemStackFunction) {
             Button.Builder[] old = new Button.Builder[1];

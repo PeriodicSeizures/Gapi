@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class ParallaxMenu extends SimpleMenu {
@@ -40,14 +41,14 @@ public final class ParallaxMenu extends SimpleMenu {
     private ParallaxMenu(Player player,
                          Function<Player, String> getTitleFunction,
                          HashMap<Integer, Button> buttons,
-                         Runnable openRunnable,
+                         Consumer<Player> openFunction,
                          BiFunction<Player, Boolean, Result> closeFunction,
                          Builder thisBuilder,
                          ItemStack background,
                          BiFunction<PBuilder, Player, List<Button>> orderedButtonsFunc,
                          boolean async
     ) {
-        super(player, getTitleFunction, buttons, openRunnable, closeFunction, thisBuilder, background, 6);
+        super(player, getTitleFunction, buttons, openFunction, closeFunction, thisBuilder, background, 6);
         //this.orderedButtons = orderedButtons;
         this.orderedButtonsFunc = orderedButtonsFunc;
         this.async = async;
@@ -224,8 +225,8 @@ public final class ParallaxMenu extends SimpleMenu {
         }
 
         @Override
-        public PBuilder onOpen(Runnable openRunnable) {
-            return (PBuilder) super.onOpen(openRunnable);
+        public PBuilder onOpen(Consumer<Player> openFunction) {
+            return (PBuilder) super.onOpen(openFunction);
         }
 
         @Override
@@ -273,7 +274,7 @@ public final class ParallaxMenu extends SimpleMenu {
             ParallaxMenu menu = new ParallaxMenu(player,
                                                  getTitleFunction,
                                                  btns,
-                                                 openRunnable,
+                                                 openFunction,
                                                  closeFunction,
                                                  this,
                                                  background,

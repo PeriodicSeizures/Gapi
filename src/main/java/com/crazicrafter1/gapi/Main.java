@@ -4,6 +4,7 @@ import com.crazicrafter1.crutils.GitUtils;
 import com.crazicrafter1.gapi.test.CmdTestMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -21,7 +22,6 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-
         if (Bukkit.getPluginManager().getPlugin("CRUtils") == null) {
             getLogger().severe("CRUtils is required");
             getLogger().severe("Install it from here " + ChatColor.UNDERLINE + "https://github.com/PeriodicSeizures/CRUtils/releases");
@@ -29,15 +29,14 @@ public class Main extends JavaPlugin {
             return;
         }
 
-        getDataFolder().mkdirs();
-        File noUpdateFile = new File(getDataFolder(), "NO_UPDATE.txt");
-        if (!(noUpdateFile.exists() && noUpdateFile.isFile())) try {
+        saveDefaultConfig();
+        FileConfiguration config = getConfig();
+        boolean update = config.getBoolean("update", false);
+
+        if (update) try {
                 StringBuilder outTag = new StringBuilder();
                 if (GitUtils.updatePlugin(this, "PeriodicSeizures", "Gapi", "Gapi.jar", outTag)) {
-                    getLogger().warning("Updated to " + outTag + "; restart server to use");
-
-                    Bukkit.getPluginManager().disablePlugin(this);
-                    return;
+                    getLogger().warning("Updated to " + outTag);
                 } else {
                     getLogger().info("Using the latest version");
                 }
@@ -46,8 +45,8 @@ public class Main extends JavaPlugin {
                 e.printStackTrace();
             }
         else {
-            getLogger().warning("Updating is disabled (delete " + noUpdateFile.getName() + " to enable)");
-            GitUtils.checkForUpdateAsync(this, "PeriodicSeizures", "Gapi", (result, tag) -> getLogger().warning("Update " + tag + " is available"));
+            getLogger().warning("Updating is disabled");
+            GitUtils.checkForUpdateAsync(this, "PeriodicSeizures", "Gapi", (result, tag) -> { if (result) getLogger().warning("Update " + tag + " is available"); else getLogger().info("Using latest version"); });
         }
 
         Main.instance = this;

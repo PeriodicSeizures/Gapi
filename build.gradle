@@ -33,7 +33,7 @@ dependencies {
     compileOnly "org.spigotmc:spigot-api:${project.spigot_version}"
     shadow 'net.wesjd:anvilgui:1.5.3-SNAPSHOT'
     //compileOnly 'com.github.PeriodicSeizures:CRUtils:main-SNAPSHOT'
-    implementation files('C:\\Users\\Rico\\Documents\\MinecraftDev\\servers\\1.18.1 paper\\plugins\\CRUtils.jar')
+    implementation files('C:\\Users\\Rico\\Documents\\MinecraftDev\\servers\\1.18.2 paper\\plugins\\CRUtils.jar')
 }
 
 def targetJavaVersion = 8
@@ -55,7 +55,7 @@ tasks.withType(JavaCompile).configureEach {
 //https://github.com/johnrengelman/shadow/issues/31#issuecomment-523614593
 
 tasks.withType(Jar) {
-    destinationDirectory = file("C:\\Users\\Rico\\Documents\\MinecraftDev\\servers\\1.18.1 paper\\plugins\\")
+    destinationDirectory = file("C:\\Users\\Rico\\Documents\\MinecraftDev\\servers\\1.18.2 paper\\plugins\\")
 }
 
 // output to bin dir instead
@@ -94,6 +94,9 @@ processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
+    filesMatching('config.yml') {
+        expand props
+    }
     filesMatching('plugin.yml') {
         expand props
     }

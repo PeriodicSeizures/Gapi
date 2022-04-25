@@ -1,5 +1,7 @@
 package com.crazicrafter1.gapi.test;
 
+import com.crazicrafter1.gapi.Result;
+import com.crazicrafter1.gapi.SimpleMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,6 +15,25 @@ public class CmdTestMenu implements CommandExecutor {
 
     public CmdTestMenu(JavaPlugin plugin) {
         plugin.getCommand("testmenu").setExecutor(this);
+    }
+
+    void expectedImprovedUsage() {
+
+        // The best approach will be to make this MenuSystem compatible across different Java software, not just Minecraft
+        // Usage:
+        //  - Gui interface
+        //      - methods for onClick
+
+        //new SimpleMenu(col) {
+        //    @Override
+        //    void onOpen() {
+
+        //    }
+        //    onOpen(p ->) // on open is for
+        //            .
+
+        //    onClose(p ->Result.PARENT())
+        //}
     }
 
     @Override
