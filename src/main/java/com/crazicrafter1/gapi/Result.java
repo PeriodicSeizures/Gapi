@@ -65,4 +65,8 @@ public abstract class Result {
         return new ResultMessage(message);
     }
 
+    public static Result REFRESH_GRAB() {
+        return new ResultRefreshGrab();
+    }
+
 }
