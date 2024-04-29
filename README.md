@@ -1,5 +1,7 @@
 # Gapi
 
+**This project is now merged into [CRUtils](https://github.com/PeriodicSeizures/CRUtils)**.
+
 ---
 
 Gapi is an acronym for Graphical API.
